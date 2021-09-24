@@ -1,0 +1,18 @@
+[package]
+name = "faktor"
+version = "0.1.0"
+description = "Solana invoicing program"
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "faktor"
+
+[features]
+no-entrypoint = []
+no-idl = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.16.0"
