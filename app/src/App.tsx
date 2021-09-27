@@ -12,6 +12,7 @@ import {
   WalletModalProvider,
   WalletMultiButton,
 } from "@solana/wallet-adapter-react-ui";
+import { Routes } from "./routes";
 
 const wallets = [
   // view list of available wallets at https://github.com/solana-labs/wallet-adapter#wallets
@@ -119,15 +120,6 @@ function App() {
   }
 }
 
-// Wallet configuration as specified here: https://github.com/solana-labs/wallet-adapter#setup
-const AppWithProvider = () => (
-  <ConnectionProvider endpoint="http://127.0.0.1:8899">
-    <WalletProvider wallets={wallets} autoConnect>
-      <WalletModalProvider>
-        <App />
-      </WalletModalProvider>
-    </WalletProvider>
-  </ConnectionProvider>
-);
-
-export default AppWithProvider;
+export default function AppWithProviders() {
+  return <Routes/>
+}
