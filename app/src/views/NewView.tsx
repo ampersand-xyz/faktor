@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { ChangeEvent, useMemo, useState } from 'react';
 
 import { Recipient } from '@models';
 import { RecipientSelect, SolanaLogo } from '@components';
@@ -16,6 +16,17 @@ export const NewView = () => {
 
   function sendRequest() {
     console.log('send request');
+  }
+
+  function handleChange(type: 'lamports' | 'note') {
+    return ({ currentTarget: { value } }: ChangeEvent<HTMLInputElement>) => {
+      switch (type) {
+        case 'lamports':
+          return setLamports(parseInt(value));
+        case 'note':
+          return setNote(value);
+      }
+    };
   }
 
   return (
@@ -39,9 +50,7 @@ export const NewView = () => {
             min={0}
             className="border border-gray-200 rounded-lg max-w-xl px-4 py-2"
             value={lamports}
-            onChange={({ currentTarget: { value } }) => {
-              setLamports(parseInt(value));
-            }}
+            onChange={handleChange('lamports')}
           />
           lamports
         </label>
@@ -51,9 +60,7 @@ export const NewView = () => {
         placeholder="What's it for?"
         className="w-full h-full rounded-lg px-4 py-3 my-2 bg-white shadow-sm resize-none"
         value={note}
-        onChange={({ currentTarget: { value } }) => {
-          setNote(value);
-        }}
+        onChange={handleChange('note')}
       />
 
       <button
