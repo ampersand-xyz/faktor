@@ -1,26 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
-import { useFriends } from '@hooks';
 import { Recipient } from '@models';
 import { RecipientSelect, SolanaLogo } from '@components';
 
 export const NewView = () => {
-  const {
-    loading: friendsLoading,
-    error: friendsError,
-    friends,
-  } = useFriends();
-
   const [lamports, setLamports] = useState(0);
   const [note, setNote] = useState('');
 
   const [recipient, setRecipient] = useState<Recipient | null>(null);
-
-  useEffect(() => {
-    if (recipient || friendsLoading || friendsError) return;
-
-    setRecipient(friends[0]);
-  }, [friendsLoading, friendsError]);
 
   const isDisabled = useMemo(
     () => lamports <= 0 || !recipient || !note,

@@ -1,5 +1,6 @@
 import { useFriends } from '@hooks';
 import { Recipient } from '@models';
+import { useMemo } from 'react';
 import Select, { SingleValue } from 'react-select';
 
 type Option = { value: string; label: string };
@@ -13,6 +14,22 @@ export function RecipientSelect({
 }) {
   const { loading, error, friends } = useFriends();
 
+  const selectProps = useMemo(() => {
+    const options = friends.map((friend) => ({
+      value: friend.address,
+      label: `${friend.firstName} ${friend.lastName}`,
+    }));
+
+    const selectedOption = options.find(
+      (option) => option.value === selected?.address,
+    );
+    const props = { options, value: selectedOption };
+
+    console.log('selectProps', props);
+
+    return props;
+  }, [friends.length, selected]);
+
   if (loading) {
     return <p>Loading...</p>;
   }
@@ -20,15 +37,6 @@ export function RecipientSelect({
   if (error) {
     return <p className="text-red-500">{error.message}</p>;
   }
-
-  const options = friends.map((friend) => ({
-    value: friend.address,
-    label: `${friend.firstName} ${friend.lastName}`,
-  }));
-
-  const selectedOption = options.find(
-    (option) => option.value === selected?.address,
-  );
 
   function handleChange(val: SingleValue<Option>) {
     if (val === null) return null;
@@ -41,11 +49,5 @@ export function RecipientSelect({
     onChange(recipient);
   }
 
-  return (
-    <Select<Option>
-      options={options}
-      value={selectedOption}
-      onChange={handleChange}
-    />
-  );
+  return <Select<Option> {...selectProps} onChange={handleChange} />;
 }

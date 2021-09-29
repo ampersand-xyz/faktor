@@ -9,7 +9,7 @@ const fakeFriend = (): Friend => ({
   lastName: faker.name.lastName(),
 });
 
-const mockFriends: Friend[] = times(10, () => fakeFriend());
+const mockFriends = (): Friend[] => times(10, () => fakeFriend());
 /**
  * todo get friends for current user
  */
@@ -23,7 +23,6 @@ export function getUserFriends({
   const publicKey = new PublicKey(address);
   const connection = new Connection(url, 'confirmed');
 
-  const friends: Friend[] = [];
-  friends.concat(mockFriends);
+  const friends: Friend[] = mockFriends();
   return Promise.resolve(friends);
 }
