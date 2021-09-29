@@ -1,13 +1,16 @@
 import { Friend } from '@models';
-import { Connection, PublicKey } from '@solana/web3.js';
+import { Connection, Keypair, PublicKey } from '@solana/web3.js';
 import faker from 'faker';
 import times from 'lodash.times';
 
-const fakeFriend = (): Friend => ({
-  address: faker.datatype.uuid(),
-  firstName: faker.name.firstName(),
-  lastName: faker.name.lastName(),
-});
+const fakeFriend = (): Friend => {
+  const keypair = Keypair.generate();
+  return {
+    address: keypair.publicKey.toString(),
+    firstName: faker.name.firstName(),
+    lastName: faker.name.lastName(),
+  };
+};
 
 const mockFriends = (): Friend[] => times(10, () => fakeFriend());
 /**
