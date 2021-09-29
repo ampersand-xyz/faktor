@@ -7,7 +7,9 @@
       "@utils": ["./utils"],
       "@models": ["./models"],
       "@actions": ["./actions"],
-      "@programs": ["./programs"]
+      "@programs": ["./programs"],
+      "@hooks": ["./hooks"],
+      "@components": ["./components"]
     }
   }
 }
