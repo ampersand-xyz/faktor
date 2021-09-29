@@ -36,6 +36,7 @@ export const NewView = () => {
           <input
             name="lamports"
             type="number"
+            min={0}
             className="border border-gray-200 rounded-lg max-w-xl px-4 py-2"
             value={lamports}
             onChange={({ currentTarget: { value } }) => {

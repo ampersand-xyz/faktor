@@ -14,7 +14,7 @@ export function useFriends() {
     return response;
   }
   const key = `/user/friends`;
-  const { data, error } = useSWR(key, fetcher);
+  const { data, error } = useSWR<Friend[], Error>(key, fetcher);
   const friends: Friend[] = data ?? [];
   const loading = !data && !error;
   return { error, loading, friends };
