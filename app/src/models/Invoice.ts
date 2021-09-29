@@ -1,6 +1,6 @@
 export type RequestStatus = 'pending' | 'approved' | 'rejected';
 
-export interface Invoice {
+export interface InvoiceData {
   sender: StringPublicKey;
   recipient: StringPublicKey;
   lamports: number;
