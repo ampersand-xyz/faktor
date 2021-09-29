@@ -1,6 +1,4 @@
-import { PublicKey } from '@solana/web3.js';
-
-export type Recipient = { publicKey: PublicKey };
+export type Recipient = { address: string };
 
 export interface Friend extends Recipient {
   firstName: string;
