@@ -42,6 +42,7 @@ export function RecipientSelect({
     if (val === null) return null;
     const { value } = val;
     const recipient = friends.find((friend) => friend.address === value);
+    debugger;
     if (!recipient)
       throw new Error(
         `Could not find selected recipient option with address ${value}`,
@@ -49,5 +50,20 @@ export function RecipientSelect({
     onChange(recipient);
   }
 
-  return <Select<Option> {...selectProps} onChange={handleChange} />;
+  function formatOptionLabel({ value, label }: Option) {
+    return (
+      <div className="flex flex-col gap-1 p-2">
+        <p className="font-medium">{label}</p>
+        <p className="text-gray-500 text-sm">{value}</p>
+      </div>
+    );
+  }
+
+  return (
+    <Select<Option>
+      {...selectProps}
+      formatOptionLabel={formatOptionLabel}
+      onChange={handleChange}
+    />
+  );
 }
