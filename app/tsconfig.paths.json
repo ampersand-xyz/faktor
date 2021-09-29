@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "baseUrl": "src",
+    "paths": {
+      "@views": ["./views"],
+      "@contexts": ["./contexts"],
+      "@utils": ["./utils"],
+      "@models": ["./models"],
+      "@actions": ["./actions"],
+      "@programs": ["./programs"],
+      "@constants": ["./constants"]
+    }
+  }
+}

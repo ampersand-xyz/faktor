@@ -1,113 +1,135 @@
-import { Connection, PublicKey } from "@solana/web3.js";
-import { Program, Provider, web3 } from "@project-serum/anchor";
-import {
-  useWallet,
-} from "@solana/wallet-adapter-react";
-import {
-  WalletMultiButton,
-} from "@solana/wallet-adapter-react-ui";
-import { useState } from "react";
+import { useEffect, useState } from 'react';
 
-import idl from "./idl.json";
+import { airdrop, createCounter, getBalance, incrementCounter } from '@actions';
+import { useAppState } from '@contexts';
+import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 
-const { SystemProgram, Keypair } = web3;
-// Create an account
-const baseAccount = Keypair.generate();
-const opts: web3.ConfirmOptions = {
-  preflightCommitment: "processed",
-};
-
-const programID = new PublicKey(idl.metadata.address);
+type State = { loading: boolean; error: Error | null };
+const initialState = { loading: false, error: null };
 
 export const HomeView = () => {
-    const [value, setValue] = useState(null);
-    const wallet = useWallet();
-  
-    async function getProvider() {
-      // Create the provider and return it to the caller
-      // Network set to local network for now
-      const network = "http://127.0.0.1:8899";
-      const connection = new Connection(network, opts.preflightCommitment);
-      const provider = new Provider(connection, wallet, opts);
-      return provider;
-    }
-  
-    async function createCounter() {
-      const provider = await getProvider();
-      // Create the program interface combining the idl, program ID, and provider
-      const program = new Program(idl as any, programID, provider);
+  const [count, setCount] = useState<string | null>(null);
+  const [airdropState, setAirdropState] = useState<State & { amount: number }>({
+    amount: 0,
+    ...initialState,
+  });
+  const [balanceState, setBalanceState] = useState<State & { balance: number }>(
+    { ...initialState, balance: 0 },
+  );
+
+  const {
+    state: { wallet, endpoint },
+  } = useAppState();
+  const address = wallet.publicKey.toString();
+
+  useEffect(() => {
+    const initBalance = async () => {
+      setBalanceState((prev) => ({ ...prev, error: null, loading: true }));
+
       try {
-        // Interact with the program via RPC
-        await program.rpc.create({
-          accounts: {
-            baseAccount: baseAccount.publicKey,
-            user: provider.wallet.publicKey,
-            systemProgram: SystemProgram.programId,
-          },
-          signers: [baseAccount],
-        });
-  
-        const account: any = await program.account.baseAccount.fetch(
-          baseAccount.publicKey
-        );
-        console.log("account: ", account);
-        setValue(account.count.toString());
+        const response = await getBalance(endpoint.url, address);
+        setBalanceState({ error: null, balance: response, loading: false });
       } catch (err) {
-        console.log("Transaction error: ", err);
+        err instanceof Error &&
+          setBalanceState((prev) => ({ ...prev, error: null, loading: false }));
       }
+    };
+
+    initBalance();
+  }, []);
+
+  async function handleCreate() {
+    const account = await createCounter(endpoint.url, wallet);
+    setCount(account.count.toString());
+  }
+
+  async function handleIncrement() {
+    const account = await incrementCounter(endpoint.url, wallet);
+    setCount(account.count.toString());
+  }
+
+  async function handleFund() {
+    setAirdropState((prev) => ({ ...prev, error: null, loading: true }));
+    try {
+      await airdrop(endpoint.url, address, airdropState.amount);
+      setBalanceState((prev) => ({
+        ...prev,
+        balance: prev.balance + airdropState.amount,
+      }));
+      setAirdropState({ amount: 0, error: null, loading: false });
+    } catch (error) {
+      error instanceof Error &&
+        setAirdropState((prev) => ({ ...prev, error: null, loading: false }));
     }
-  
-    async function increment() {
-      const provider = await getProvider();
-      const program = new Program(idl as any, programID, provider);
-      await program.rpc.increment({
-        accounts: {
-          baseAccount: baseAccount.publicKey,
-        },
-      });
-  
-      const account: any = await program.account.baseAccount.fetch(
-        baseAccount.publicKey
-      );
-      console.log("account: ", account);
-      setValue(account.count.toString());
-    }
-  
-    if (!wallet.connected) {
-      // If the user's wallet is not connected, display connect wallet button.
-      return (
-        <div className="flex justify-center pt-24">
-          <WalletMultiButton />
+  }
+
+  return (
+    <div className="App">
+      <div className="my-2 px-3 py-5 border border-gray-200 rounded">
+        <div>
+          <h3 className="my-2 text-lg font-medium">Wallet:</h3>
+          <p>{address}</p>
         </div>
-      );
-    } else {
-      return (
-        <div className="App">
-          <div>
-            {!value && (
-              <button
-                className="px-4 py-3 font-bold text-white bg-blue-500 rounded"
-                onClick={createCounter}
-              >
-                Create counter
-              </button>
-            )}
-            {value && (
-              <button
-                className="px-4 py-3 font-bold text-white bg-purple-500 rounded"
-                onClick={increment}
-              >
-                Increment counter
-              </button>
-            )}
-  
-            {value && value >= Number(0) ? (
-              <h2>{value}</h2>
-            ) : (
-              <h3>Please create the counter.</h3>
-            )}
+        <h3 className="my-2 text-lg font-medium">Balance:</h3>
+        {balanceState.error ? (
+          <p className="text-red-500">{`Failed to load balance: ${balanceState.error.message}`}</p>
+        ) : (
+          <p>
+            {balanceState.loading
+              ? 'Loading...'
+              : `${balanceState.balance / LAMPORTS_PER_SOL} SOL`}
+          </p>
+        )}
+        {airdropState.error && (
+          <p className="text-red-500">{airdropState.error.message}</p>
+        )}
+        <div className="flex items-center gap-6">
+          <div className="flex flex-col">
+            <label className="font-medium">Amount in lamports</label>
+            <input
+              type="number"
+              value={airdropState.amount}
+              name="amount"
+              placeholder="Enter desired amount of SOL to airdrop"
+              onChange={({ currentTarget: { value } }) => {
+                const amount = parseInt(value);
+                setAirdropState((prev) => ({ ...prev, amount }));
+              }}
+            />
+            <button
+              className="my-2 px-4 py-3 font-bold text-white bg-purple-500 rounded"
+              onClick={handleFund}
+            >
+              {airdropState.loading ? 'Funding...' : 'Fund this wallet'}
+            </button>
           </div>
         </div>
-      );
-    }
-}
+      </div>
+
+      <div className="my-2 px-3 py-5 border border-gray-200 rounded">
+        {!count && (
+          <button
+            className="px-4 py-3 font-bold text-white bg-blue-500 rounded"
+            onClick={handleCreate}
+          >
+            Create counter
+          </button>
+        )}
+        {count && (
+          <button
+            className="px-4 py-3 font-bold text-white bg-purple-500 rounded"
+            onClick={handleIncrement}
+          >
+            Increment counter
+          </button>
+        )}
+
+        {count && parseInt(count) >= Number(0) ? (
+          <h2>{count}</h2>
+        ) : (
+          <h3>Please create a counter.</h3>
+        )}
+      </div>
+    </div>
+  );
+};
