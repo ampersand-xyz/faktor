@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-declare_id!("4DFqRTmzdshyMGbxHbuXW9cDSk9jba3faHd8H5YKq2vb");
+declare_id!("8BHW97BHkSKUHjTxHd6g7eGRfLxQfmXniEMcAskxQTKi");
 
 #[program]
 pub mod faktor {

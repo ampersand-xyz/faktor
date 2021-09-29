@@ -13,7 +13,7 @@
         {
           "name": "user",
           "isMut": true,
-          "isSigner": false
+          "isSigner": true
         },
         {
           "name": "systemProgram",
@@ -50,6 +50,6 @@
     }
   ],
   "metadata": {
-    "address": "HzA2tLg882jYMtTqFTJ8wMUFPW2pTJGbSswg1yK8rASg"
+    "address": "8BHW97BHkSKUHjTxHd6g7eGRfLxQfmXniEMcAskxQTKi"
   }
 }
