@@ -1,5 +1,8 @@
 import { getPhantomWallet } from '@solana/wallet-adapter-wallets';
-import { WalletProvider, ConnectionProvider } from '@solana/wallet-adapter-react';
+import {
+  WalletProvider,
+  ConnectionProvider,
+} from '@solana/wallet-adapter-react';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { Routes } from './routes';
 import { AppLayout } from './AppLayout';

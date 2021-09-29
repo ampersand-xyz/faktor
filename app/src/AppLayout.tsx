@@ -1,6 +1,6 @@
-import {ReactNode} from 'react';
+import { ReactNode } from 'react';
 
-export const AppLayout = ({children}: {children: ReactNode}) => {
+export const AppLayout = ({ children }: { children: ReactNode }) => {
   return (
     <body>
       <main className="h-screen w-screen">

@@ -1,12 +1,12 @@
-import {Connection, PublicKey} from '@solana/web3.js';
-import {Program, Provider, web3} from '@project-serum/anchor';
-import {useWallet} from '@solana/wallet-adapter-react';
-import {WalletMultiButton} from '@solana/wallet-adapter-react-ui';
-import {useState} from 'react';
+import { Connection, PublicKey } from '@solana/web3.js';
+import { Program, Provider, web3 } from '@project-serum/anchor';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { useState } from 'react';
 
 import idl from './idl.json';
 
-const {SystemProgram, Keypair} = web3;
+const { SystemProgram, Keypair } = web3;
 // Create an account
 const baseAccount = Keypair.generate();
 const opts: web3.ConfirmOptions = {

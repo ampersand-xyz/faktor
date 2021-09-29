@@ -1,5 +1,5 @@
-import {HashRouter, Switch, Route} from 'react-router-dom';
-import {HomeView, NewView, SentView, ReceivedView} from './views';
+import { HashRouter, Switch, Route } from 'react-router-dom';
+import { HomeView, NewView, SentView, ReceivedView } from './views';
 
 export const Routes = () => {
   return (
