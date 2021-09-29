@@ -1,12 +1,12 @@
 [programs.localnet]
-faktor = "HzA2tLg882jYMtTqFTJ8wMUFPW2pTJGbSswg1yK8rASg"
+faktor = "4DFqRTmzdshyMGbxHbuXW9cDSk9jba3faHd8H5YKq2vb"
 
 [registry]
 url = "https://anchor.projectserum.com"
 
 [provider]
 cluster = "localnet"
-wallet = "/Users/garfield/.config/solana/id.json"
+wallet = "~/.config/solana/id.json"
 
 [scripts]
 test = "mocha -t 1000000 tests/"
