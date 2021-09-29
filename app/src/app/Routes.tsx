@@ -34,16 +34,16 @@ export const Routes = () => {
         <ConnectedHeader />
         <Content>
           <Switch>
-            <Route path="/">
+            <Route exact path="/">
               <HomeView />
             </Route>
-            <Route path="/new">
+            <Route exact path="/new">
               <NewView />
             </Route>
-            <Route path="/received">
+            <Route exact path="/received">
               <ReceivedView />
             </Route>
-            <Route path="/sent">
+            <Route exact path="/sent">
               <SentView />
             </Route>
           </Switch>
