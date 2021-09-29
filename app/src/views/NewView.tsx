@@ -19,7 +19,9 @@ export const NewView = () => {
   }
 
   function handleChange(type: 'lamports' | 'note') {
-    return ({ currentTarget: { value } }: ChangeEvent<HTMLInputElement>) => {
+    return ({
+      currentTarget: { value },
+    }: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       switch (type) {
         case 'lamports':
           return setLamports(parseInt(value));
