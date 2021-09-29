@@ -6,13 +6,14 @@ import {
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { Routes } from './routes';
 import { AppLayout } from './AppLayout';
+import { BrowserRouter } from 'react-router-dom';
 
 const wallets = [
   // view list of available wallets at https://github.com/solana-labs/wallet-adapter#wallets
   getPhantomWallet(),
 ];
 
-export default function AppWithProviders() {
+function AppWithProviders() {
   return (
     <ConnectionProvider endpoint="http://127.0.0.1:8899">
       <WalletProvider wallets={wallets} autoConnect>
@@ -25,3 +26,10 @@ export default function AppWithProviders() {
     </ConnectionProvider>
   );
 }
+
+type Component<P = any> = (props?: P) => JSX.Element;
+
+const withRouter = (component: Component) => () =>
+  <BrowserRouter>{component()}</BrowserRouter>;
+
+export default withRouter(AppWithProviders);

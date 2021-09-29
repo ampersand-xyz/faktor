@@ -1,26 +1,30 @@
 import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { ReactNode } from 'react';
+import { DefaultHeader, ConnectedHeader } from './app/Header';
 
-const Header = () => {
-  const wallet = useWallet();
-
-  if (!wallet.connected) return null;
-
-  return (
-    <header className="w-screen h-24 py-5 px-8 flex items-center gap-4">
-      <a href="/">HOME</a>
-      <a href="/new">NEW</a>
-      <a href="/sent">SENT</a>
-      <a href="/received">RECEIVED</a>
-    </header>
-  );
+const Content = ({ children }) => {
+  return <div className="px-5 py-8">{children}</div>;
 };
 
 export const AppLayout = ({ children }: { children: ReactNode }) => {
+  const wallet = useWallet();
+
+  if (!wallet.connected) {
+    return (
+      <main>
+        <DefaultHeader />
+        <Content>
+          <WalletMultiButton />
+        </Content>
+      </main>
+    );
+  }
+
   return (
-    <main className="h-screen w-screen">
-      <Header />
-      {children}
+    <main>
+      <ConnectedHeader />
+      <Content>{children}</Content>
     </main>
   );
 };
