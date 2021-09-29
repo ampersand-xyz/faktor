@@ -30,14 +30,9 @@ export const HomeView = () => {
 
   async function createCounter() {
     const provider = await getProvider();
-    console.log("HELLO");
+
     // Create the program interface combining the idl, program ID, and provider
     const program = new Program(idl as any, programID, provider);
-
-    console.log("Program: ", program);
-    console.log("BasedAccount: ", baseAccount.publicKey);
-    console.log("User: ", provider.wallet.publicKey);
-    console.log("SystemProgram: ", SystemProgram.programId);
 
     try {
       // Interact with the program via RPC
@@ -49,8 +44,6 @@ export const HomeView = () => {
         },
         signers: [baseAccount],
       });
-
-      console.log("Data: ", data);
 
       const account: any = await program.account.baseAccount.fetch(
         baseAccount.publicKey
