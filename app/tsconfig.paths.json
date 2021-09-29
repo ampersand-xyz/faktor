@@ -8,7 +8,6 @@
       "@models": ["./models"],
       "@actions": ["./actions"],
       "@programs": ["./programs"],
-      "@constants": ["./constants"]
     }
   }
 }

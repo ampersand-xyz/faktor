@@ -1,4 +1,4 @@
-import { Endpoint, ENDPOINTS } from '@constants';
+import { Endpoint, ENDPOINTS } from '@utils';
 import { AnchorWallet } from '@solana/wallet-adapter-react';
 import { createContext, Dispatch, useContext, useReducer } from 'react';
 
