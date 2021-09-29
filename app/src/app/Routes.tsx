@@ -5,7 +5,9 @@ import { ConnectedHeader, DefaultHeader } from './Header';
 import { AppStateProvider } from '@contexts';
 
 const Content = ({ children }: ContainerProps) => {
-  return <div className="px-5 py-8">{children}</div>;
+  return (
+    <div className="px-5 py-8 bg-gray-100 w-full h-content">{children}</div>
+  );
 };
 
 export const Routes = () => {

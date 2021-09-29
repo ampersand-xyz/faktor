@@ -65,7 +65,7 @@ export const HomeView = () => {
 
   return (
     <div className="App">
-      <div className="my-2 px-3 py-5 border border-gray-200 rounded">
+      <div className="my-2 px-3 py-5 bg-white shadow-sm border border-gray-200 rounded-lg">
         <div>
           <h3 className="my-2 text-lg font-medium">Wallet:</h3>
           <p>{address}</p>
@@ -97,7 +97,7 @@ export const HomeView = () => {
               }}
             />
             <button
-              className="my-2 px-4 py-3 font-bold text-white bg-purple-500 rounded"
+              className="my-2 px-4 py-3 font-bold text-white bg-purple-500 rounded-lg"
               onClick={handleFund}
             >
               {airdropState.loading ? 'Funding...' : 'Fund this wallet'}
@@ -106,10 +106,10 @@ export const HomeView = () => {
         </div>
       </div>
 
-      <div className="my-2 px-3 py-5 border border-gray-200 rounded">
+      <div className="my-2 px-3 py-5 bg-white shadow-sm border border-gray-200 rounded-lg">
         {!count && (
           <button
-            className="px-4 py-3 font-bold text-white bg-blue-500 rounded"
+            className="px-4 py-3 font-bold text-white bg-blue-500 rounded-lg"
             onClick={handleCreate}
           >
             Create counter
@@ -117,7 +117,7 @@ export const HomeView = () => {
         )}
         {count && (
           <button
-            className="px-4 py-3 font-bold text-white bg-purple-500 rounded"
+            className="px-4 py-3 font-bold text-white bg-purple-500 rounded-lg"
             onClick={handleIncrement}
           >
             Increment counter
