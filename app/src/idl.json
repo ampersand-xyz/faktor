@@ -22,6 +22,17 @@
         }
       ],
       "args": []
+    },
+    {
+      "name": "increment",
+      "accounts": [
+        {
+          "name": "baseAccount",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -39,6 +50,6 @@
     }
   ],
   "metadata": {
-    "address": "J5oRyhTB7gzKihVABnjmBFJj85v5nBUkh2Ey7bBdiAfu"
+    "address": "8BHW97BHkSKUHjTxHd6g7eGRfLxQfmXniEMcAskxQTKi"
   }
 }
