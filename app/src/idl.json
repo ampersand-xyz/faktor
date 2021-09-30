@@ -22,17 +22,6 @@
         }
       ],
       "args": []
-    },
-    {
-      "name": "increment",
-      "accounts": [
-        {
-          "name": "baseAccount",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": []
     }
   ],
   "accounts": [
