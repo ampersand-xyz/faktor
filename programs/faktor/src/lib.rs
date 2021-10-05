@@ -87,13 +87,6 @@ pub struct Invoice {
     pub payer: Pubkey,
 }
 
-#[account]
-pub struct Counter {
-    pub count: u64,
-    pub alice: Pubkey,
-    pub bob: Pubkey,
-}
-
 #[error]
 pub enum ErrorCode {
     #[msg("Not enough SOL to pay this invoice.")]
