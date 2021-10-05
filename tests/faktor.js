@@ -55,7 +55,7 @@ describe("faktor", () => {
     assert.ok(invoice.payer.toString() == bob.publicKey);
   });
 
-  it("Partially pays down an invoice", async () => {
+  it("Partially pays an invoice", async () => {
     const invoicePubkey = await issueInvoice(1234);
     const aliceInitialBalance = await provider.connection.getBalance(
       alice.publicKey
@@ -88,7 +88,7 @@ describe("faktor", () => {
     assert.ok(bobFinalBalance === bobInitialBalance - amount);
   });
 
-  it("Pays down an invoice in full", async () => {
+  it("Pays an invoice in full", async () => {
     const invoicePubkey = await issueInvoice(1234);
     const aliceInitialBalance = await provider.connection.getBalance(
       alice.publicKey
