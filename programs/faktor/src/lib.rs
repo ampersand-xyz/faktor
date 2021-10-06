@@ -62,6 +62,22 @@ pub mod faktor {
         return Ok(());
     }
 
+    pub fn reject_invoice(ctx: Context<RejectInvoice>, is_spam: bool) -> ProgramResult {
+        // Validate the invoice is open
+        let invoice = &mut ctx.accounts.invoice;
+        if invoice.status != InvoiceStatus::Open {
+            return Err(ErrorCode::InvoiceNotOpen.into());
+        }
+        // Reject the invoice and optionally flag as spam
+        invoice.remaining_debt = 0;
+        if is_spam {
+            invoice.status = InvoiceStatus::Spam;
+        } else {
+            invoice.status = InvoiceStatus::Rejected;
+        }
+        return Ok(());
+    }
+
     pub fn void_invoice(ctx: Context<VoidInvoice>) -> ProgramResult {
         // Validate the invoice is open
         let invoice = &mut ctx.accounts.invoice;
@@ -101,6 +117,14 @@ pub struct PayInvoice<'info> {
 }
 
 #[derive(Accounts)]
+pub struct RejectInvoice<'info> {
+    #[account(mut, has_one = debtor)]
+    pub invoice: Account<'info, Invoice>,
+    #[account(mut)]
+    pub debtor: Signer<'info>,
+}
+
+#[derive(Accounts)]
 pub struct VoidInvoice<'info> {
     #[account(mut, has_one = issuer)]
     pub invoice: Account<'info, Invoice>,
@@ -124,6 +148,8 @@ pub struct Invoice {
 pub enum InvoiceStatus {
     Open,
     Paid,
+    Rejected,
+    Spam,
     Void,
 }
 

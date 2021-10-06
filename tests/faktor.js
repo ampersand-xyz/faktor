@@ -25,7 +25,7 @@ describe("faktor", () => {
   async function issueInvoice(amount) {
     const invoice = Keypair.generate();
     const bnAmount = new BN(amount);
-    const memo = `Please pay me ${amount} SOL!`;
+    const memo = `Please pay me!`;
     await program.rpc.issueInvoice(bnAmount, memo, {
       accounts: {
         invoice: invoice.publicKey,
@@ -83,7 +83,7 @@ describe("faktor", () => {
     assert.ok(invoice.initialDebt.toString() === "1234");
     assert.ok(invoice.paidDebt.toString() === "0");
     assert.ok(invoice.remainingDebt.toString() === "1234");
-    assert.ok(invoice.memo === "Please pay me 1234 SOL!");
+    assert.ok(invoice.memo === "Please pay me!");
     assert.ok(invoice.status.open !== undefined);
     assert.ok(finalBalances.alice < initialBalances.alice);
     assert.ok(finalBalances.bob === initialBalances.bob);
@@ -113,7 +113,7 @@ describe("faktor", () => {
     assert.ok(invoice.initialDebt.toString() === "1234");
     assert.ok(invoice.paidDebt.toString() === "1234");
     assert.ok(invoice.remainingDebt.toString() === "0");
-    assert.ok(invoice.memo === "Please pay me 1234 SOL!");
+    assert.ok(invoice.memo === "Please pay me!");
     assert.ok(invoice.status.paid !== undefined);
     assert.ok(finalBalances.alice === initialBalances.alice);
     assert.ok(finalBalances.bob === initialBalances.bob - amount);
@@ -143,11 +143,65 @@ describe("faktor", () => {
     assert.ok(invoice.initialDebt.toString() === "1234");
     assert.ok(invoice.paidDebt.toString() === "1000");
     assert.ok(invoice.remainingDebt.toString() === "234");
-    assert.ok(invoice.memo === "Please pay me 1234 SOL!");
+    assert.ok(invoice.memo === "Please pay me!");
     assert.ok(invoice.status.open !== undefined);
     assert.ok(finalBalances.alice === initialBalances.alice);
     assert.ok(finalBalances.bob === initialBalances.bob - amount);
     assert.ok(finalBalances.chalie === initialBalances.chalie + amount);
+  });
+
+  it("Rejects an invoice", async () => {
+    const invoicePubkey = await issueInvoice(1234, null);
+    const initialBalances = await getBalances();
+    await program.rpc.rejectInvoice(false, {
+      accounts: {
+        invoice: invoicePubkey,
+        debtor: bob.publicKey,
+      },
+      signers: [bob],
+    });
+
+    // Validation
+    const invoice = await program.account.invoice.fetch(invoicePubkey);
+    const finalBalances = await getBalances();
+    assert.ok(invoice.issuer.toString() === alice.publicKey.toString());
+    assert.ok(invoice.debtor.toString() === bob.publicKey.toString());
+    assert.ok(invoice.collector.toString() === charlie.publicKey.toString());
+    assert.ok(invoice.initialDebt.toString() === "1234");
+    assert.ok(invoice.paidDebt.toString() === "0");
+    assert.ok(invoice.remainingDebt.toString() === "0");
+    assert.ok(invoice.memo === "Please pay me!");
+    assert.ok(invoice.status.rejected !== undefined);
+    assert.ok(finalBalances.alice === initialBalances.alice);
+    assert.ok(finalBalances.bob === initialBalances.bob);
+    assert.ok(finalBalances.chalie === initialBalances.chalie);
+  });
+
+  it("Rejects an invoice as spam", async () => {
+    const invoicePubkey = await issueInvoice(1234, null);
+    const initialBalances = await getBalances();
+    await program.rpc.rejectInvoice(true, {
+      accounts: {
+        invoice: invoicePubkey,
+        debtor: bob.publicKey,
+      },
+      signers: [bob],
+    });
+
+    // Validation
+    const invoice = await program.account.invoice.fetch(invoicePubkey);
+    const finalBalances = await getBalances();
+    assert.ok(invoice.issuer.toString() === alice.publicKey.toString());
+    assert.ok(invoice.debtor.toString() === bob.publicKey.toString());
+    assert.ok(invoice.collector.toString() === charlie.publicKey.toString());
+    assert.ok(invoice.initialDebt.toString() === "1234");
+    assert.ok(invoice.paidDebt.toString() === "0");
+    assert.ok(invoice.remainingDebt.toString() === "0");
+    assert.ok(invoice.memo === "Please pay me!");
+    assert.ok(invoice.status.spam !== undefined);
+    assert.ok(finalBalances.alice === initialBalances.alice);
+    assert.ok(finalBalances.bob === initialBalances.bob);
+    assert.ok(finalBalances.chalie === initialBalances.chalie);
   });
 
   it("Voids an invoice", async () => {
@@ -170,7 +224,7 @@ describe("faktor", () => {
     assert.ok(invoice.initialDebt.toString() === "1234");
     assert.ok(invoice.paidDebt.toString() === "0");
     assert.ok(invoice.remainingDebt.toString() === "0");
-    assert.ok(invoice.memo === "Please pay me 1234 SOL!");
+    assert.ok(invoice.memo === "Please pay me!");
     assert.ok(invoice.status.void !== undefined);
     assert.ok(finalBalances.alice === initialBalances.alice);
     assert.ok(finalBalances.bob === initialBalances.bob);
