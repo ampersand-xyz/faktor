@@ -7,26 +7,31 @@ const { BN, Provider } = anchor;
 const { SystemProgram, Keypair } = anchor.web3;
 
 describe("faktor", () => {
-  // Setup test environment
+  // Test environment
   const provider = Provider.local();
   const alice = Keypair.generate();
   const bob = Keypair.generate();
+  const charlie = Keypair.generate();
   const program = anchor.workspace.Faktor;
   anchor.setProvider(provider);
 
   /**
-   * Helper function to issuing an invoice from Alice to Bob.
+   * issueInvoice - Issues an invoice from Alice (issuer)
+   *   to Bob (debtor) to be collected by Charlie (collector).
    *
-   * @param {number} amount - The invoice amount
+   * @param {number} amount The invoice amount
+   * @param {PublicKey} collector An optional address to collect payments at
    */
   async function issueInvoice(amount) {
     const invoice = Keypair.generate();
     const bnAmount = new BN(amount);
-    await program.rpc.issueInvoice(bnAmount, {
+    const memo = `Please pay me!`;
+    await program.rpc.issueInvoice(bnAmount, memo, {
       accounts: {
         invoice: invoice.publicKey,
         issuer: alice.publicKey,
-        payer: bob.publicKey,
+        debtor: bob.publicKey,
+        collector: charlie.publicKey,
         systemProgram: SystemProgram.programId,
       },
       signers: [invoice, alice],
@@ -34,41 +39,96 @@ describe("faktor", () => {
     return invoice.publicKey;
   }
 
+  /**
+   * getBalances - Fetch the balances of Alice, Bob, and Charlie.
+   *
+   * @returns {object} The balances
+   */
+  async function getBalances() {
+    return {
+      alice: await provider.connection.getBalance(alice.publicKey),
+      bob: await provider.connection.getBalance(bob.publicKey),
+      chalie: await provider.connection.getBalance(charlie.publicKey),
+    };
+  }
+
+  /**
+   * airdrop - Airdrop SOL to an account.
+   *
+   * @param {PublicKey} publicKey
+   */
+  async function airdrop(publicKey) {
+    await provider.connection
+      .requestAirdrop(publicKey, LAMPORTS_PER_SOL)
+      .then((sig) => provider.connection.confirmTransaction(sig, "confirmed"));
+  }
+
   // Airdrop SOL to Alice and Bob
   before(async () => {
-    await provider.connection
-      .requestAirdrop(alice.publicKey, LAMPORTS_PER_SOL)
-      .then((sig) => provider.connection.confirmTransaction(sig, "confirmed"));
-    await provider.connection
-      .requestAirdrop(bob.publicKey, LAMPORTS_PER_SOL)
-      .then((sig) => provider.connection.confirmTransaction(sig, "confirmed"));
+    await airdrop(alice.publicKey);
+    await airdrop(bob.publicKey);
+    await airdrop(charlie.publicKey);
   });
 
   it("Issues an invoice", async () => {
+    const initialBalances = await getBalances();
     const invoicePubkey = await issueInvoice(1234);
 
     // Validation
     const invoice = await program.account.invoice.fetch(invoicePubkey);
-    assert.ok(invoice.initialAmount.toString() == "1234");
-    assert.ok(invoice.remainingAmount.toString() == "1234");
-    assert.ok(invoice.issuer.toString() == alice.publicKey);
-    assert.ok(invoice.payer.toString() == bob.publicKey);
+    const finalBalances = await getBalances();
+    assert.ok(invoice.issuer.toString() === alice.publicKey.toString());
+    assert.ok(invoice.debtor.toString() === bob.publicKey.toString());
+    assert.ok(invoice.collector.toString() === charlie.publicKey.toString());
+    assert.ok(invoice.initialDebt.toString() === "1234");
+    assert.ok(invoice.paidDebt.toString() === "0");
+    assert.ok(invoice.remainingDebt.toString() === "1234");
+    assert.ok(invoice.memo === "Please pay me!");
+    assert.ok(invoice.status.open !== undefined);
+    assert.ok(finalBalances.alice < initialBalances.alice);
+    assert.ok(finalBalances.bob === initialBalances.bob);
+    assert.ok(finalBalances.chalie === initialBalances.chalie);
   });
 
-  it("Partially pays an invoice", async () => {
-    const invoicePubkey = await issueInvoice(1234);
-    const aliceInitialBalance = await provider.connection.getBalance(
-      alice.publicKey
-    );
-    const bobInitialBalance = await provider.connection.getBalance(
-      bob.publicKey
-    );
+  it("Pays an invoice in full", async () => {
+    const amount = 1234;
+    const invoicePubkey = await issueInvoice(amount, null);
+    const initialBalances = await getBalances();
+    await program.rpc.payInvoice(new BN(amount), {
+      accounts: {
+        invoice: invoicePubkey,
+        debtor: bob.publicKey,
+        collector: charlie.publicKey,
+        systemProgram: SystemProgram.programId,
+      },
+      signers: [bob],
+    });
+
+    // Validation
+    const invoice = await program.account.invoice.fetch(invoicePubkey);
+    const finalBalances = await getBalances();
+    assert.ok(invoice.issuer.toString() === alice.publicKey.toString());
+    assert.ok(invoice.debtor.toString() === bob.publicKey.toString());
+    assert.ok(invoice.collector.toString() === charlie.publicKey.toString());
+    assert.ok(invoice.initialDebt.toString() === "1234");
+    assert.ok(invoice.paidDebt.toString() === "1234");
+    assert.ok(invoice.remainingDebt.toString() === "0");
+    assert.ok(invoice.memo === "Please pay me!");
+    assert.ok(invoice.status.paid !== undefined);
+    assert.ok(finalBalances.alice === initialBalances.alice);
+    assert.ok(finalBalances.bob === initialBalances.bob - amount);
+    assert.ok(finalBalances.chalie === initialBalances.chalie + amount);
+  });
+
+  it("Pays an invoice in part", async () => {
+    const invoicePubkey = await issueInvoice(1234, null);
+    const initialBalances = await getBalances();
     const amount = 1000;
     await program.rpc.payInvoice(new BN(amount), {
       accounts: {
         invoice: invoicePubkey,
-        issuer: alice.publicKey,
-        payer: bob.publicKey,
+        debtor: bob.publicKey,
+        collector: charlie.publicKey,
         systemProgram: SystemProgram.programId,
       },
       signers: [bob],
@@ -76,52 +136,77 @@ describe("faktor", () => {
 
     // Validation
     const invoice = await program.account.invoice.fetch(invoicePubkey);
-    assert.ok(invoice.initialAmount.toString() == "1234");
-    assert.ok(invoice.remainingAmount.toString() == "234");
-    assert.ok(invoice.issuer.toString() == alice.publicKey);
-    assert.ok(invoice.payer.toString() == bob.publicKey);
-    const aliceFinalBalance = await provider.connection.getBalance(
-      alice.publicKey
-    );
-    const bobFinalBalance = await provider.connection.getBalance(bob.publicKey);
-    assert.ok(aliceFinalBalance === aliceInitialBalance + amount);
-    assert.ok(bobFinalBalance === bobInitialBalance - amount);
+    const finalBalances = await getBalances();
+    assert.ok(invoice.issuer.toString() === alice.publicKey.toString());
+    assert.ok(invoice.debtor.toString() === bob.publicKey.toString());
+    assert.ok(invoice.collector.toString() === charlie.publicKey.toString());
+    assert.ok(invoice.initialDebt.toString() === "1234");
+    assert.ok(invoice.paidDebt.toString() === "1000");
+    assert.ok(invoice.remainingDebt.toString() === "234");
+    assert.ok(invoice.memo === "Please pay me!");
+    assert.ok(invoice.status.open !== undefined);
+    assert.ok(finalBalances.alice === initialBalances.alice);
+    assert.ok(finalBalances.bob === initialBalances.bob - amount);
+    assert.ok(finalBalances.chalie === initialBalances.chalie + amount);
   });
 
-  it("Pays an invoice in full", async () => {
-    const invoicePubkey = await issueInvoice(1234);
-    const aliceInitialBalance = await provider.connection.getBalance(
-      alice.publicKey
-    );
-    const bobInitialBalance = await provider.connection.getBalance(
-      bob.publicKey
-    );
-    await program.rpc.payInvoice(new BN(1234), {
+  it("Rejects an invoice", async () => {
+    const invoicePubkey = await issueInvoice(1234, null);
+    const initialBalances = await getBalances();
+    await program.rpc.rejectInvoice(false, {
       accounts: {
         invoice: invoicePubkey,
-        issuer: alice.publicKey,
-        payer: bob.publicKey,
-        systemProgram: SystemProgram.programId,
+        debtor: bob.publicKey,
       },
       signers: [bob],
     });
 
     // Validation
     const invoice = await program.account.invoice.fetch(invoicePubkey);
-    assert.ok(invoice.initialAmount.toString() == "1234");
-    assert.ok(invoice.remainingAmount.toString() == "0");
-    assert.ok(invoice.issuer.toString() == alice.publicKey);
-    assert.ok(invoice.payer.toString() == bob.publicKey);
-    const aliceFinalBalance = await provider.connection.getBalance(
-      alice.publicKey
-    );
-    const bobFinalBalance = await provider.connection.getBalance(bob.publicKey);
-    assert.ok(aliceFinalBalance === aliceInitialBalance + 1234);
-    assert.ok(bobFinalBalance === bobInitialBalance - 1234);
+    const finalBalances = await getBalances();
+    assert.ok(invoice.issuer.toString() === alice.publicKey.toString());
+    assert.ok(invoice.debtor.toString() === bob.publicKey.toString());
+    assert.ok(invoice.collector.toString() === charlie.publicKey.toString());
+    assert.ok(invoice.initialDebt.toString() === "1234");
+    assert.ok(invoice.paidDebt.toString() === "0");
+    assert.ok(invoice.remainingDebt.toString() === "0");
+    assert.ok(invoice.memo === "Please pay me!");
+    assert.ok(invoice.status.rejected !== undefined);
+    assert.ok(finalBalances.alice === initialBalances.alice);
+    assert.ok(finalBalances.bob === initialBalances.bob);
+    assert.ok(finalBalances.chalie === initialBalances.chalie);
+  });
+
+  it("Rejects an invoice as spam", async () => {
+    const invoicePubkey = await issueInvoice(1234, null);
+    const initialBalances = await getBalances();
+    await program.rpc.rejectInvoice(true, {
+      accounts: {
+        invoice: invoicePubkey,
+        debtor: bob.publicKey,
+      },
+      signers: [bob],
+    });
+
+    // Validation
+    const invoice = await program.account.invoice.fetch(invoicePubkey);
+    const finalBalances = await getBalances();
+    assert.ok(invoice.issuer.toString() === alice.publicKey.toString());
+    assert.ok(invoice.debtor.toString() === bob.publicKey.toString());
+    assert.ok(invoice.collector.toString() === charlie.publicKey.toString());
+    assert.ok(invoice.initialDebt.toString() === "1234");
+    assert.ok(invoice.paidDebt.toString() === "0");
+    assert.ok(invoice.remainingDebt.toString() === "0");
+    assert.ok(invoice.memo === "Please pay me!");
+    assert.ok(invoice.status.spam !== undefined);
+    assert.ok(finalBalances.alice === initialBalances.alice);
+    assert.ok(finalBalances.bob === initialBalances.bob);
+    assert.ok(finalBalances.chalie === initialBalances.chalie);
   });
 
   it("Voids an invoice", async () => {
-    const invoicePubkey = await issueInvoice(1234);
+    const invoicePubkey = await issueInvoice(1234, null);
+    const initialBalances = await getBalances();
     await program.rpc.voidInvoice({
       accounts: {
         invoice: invoicePubkey,
@@ -132,9 +217,17 @@ describe("faktor", () => {
 
     // Validation
     const invoice = await program.account.invoice.fetch(invoicePubkey);
-    assert.ok(invoice.initialAmount.toString() == "1234");
-    assert.ok(invoice.remainingAmount.toString() == "0");
-    assert.ok(invoice.issuer.toString() == alice.publicKey);
-    assert.ok(invoice.payer.toString() == bob.publicKey);
+    const finalBalances = await getBalances();
+    assert.ok(invoice.issuer.toString() === alice.publicKey.toString());
+    assert.ok(invoice.debtor.toString() === bob.publicKey.toString());
+    assert.ok(invoice.collector.toString() === charlie.publicKey.toString());
+    assert.ok(invoice.initialDebt.toString() === "1234");
+    assert.ok(invoice.paidDebt.toString() === "0");
+    assert.ok(invoice.remainingDebt.toString() === "0");
+    assert.ok(invoice.memo === "Please pay me!");
+    assert.ok(invoice.status.void !== undefined);
+    assert.ok(finalBalances.alice === initialBalances.alice);
+    assert.ok(finalBalances.bob === initialBalances.bob);
+    assert.ok(finalBalances.chalie === initialBalances.chalie);
   });
 });
