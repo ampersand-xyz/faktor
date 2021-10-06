@@ -25,9 +25,13 @@ export default class PhantomProvider extends EventEmitter implements IWallet {
     if (this.wallet) return this.wallet.autoApprove;
     return false;
   }
-  connect(): any {
+  async connect(): Promise<any> {
     console.log('PhantomProvider CONNECT');
-    if (this.wallet) this.wallet.connect();
+    if (this.wallet) {
+      const result = await this.wallet.connect();
+      return result;
+    }
+    return null;
   }
   disconnect(): any {
     if (this.wallet) this.wallet.disconnect();
@@ -45,14 +49,6 @@ export default class PhantomProvider extends EventEmitter implements IWallet {
   constructor() {
     super();
     this.wallet = this.getPhantomWallet();
-    if (this.wallet) {
-      this.wallet.on('connect', (publicKey: PublicKey) => {
-        this.emit('connect', publicKey);
-      });
-      this.wallet.on('disconnect', () => {
-        this.emit('disconnect');
-      });
-    }
   }
 
   private getPhantomWallet(): IPhantomWallet | undefined {

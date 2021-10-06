@@ -1,5 +1,5 @@
 export enum ClusterID {
-  MainNet = 'mainnet',
+  MainNet = 'mainnet-beta',
   TestNet = 'testnet',
   DevNet = 'devnet',
   Custom = 'custom',
@@ -7,6 +7,6 @@ export enum ClusterID {
 }
 
 export enum WalletProviders {
-  Sollet = 0,
-  Phantom = 1
+  Sollet = 'Sollect',
+  Phantom = 'Phantom'
 }

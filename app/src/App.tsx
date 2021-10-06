@@ -1,23 +1,21 @@
 import { Routes } from './routes';
 import { ReactNode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { AppStoreProvider, useAppStore } from '@stores';
-import { DisconnectButton } from '@components/connection/DisconnectButton';
-import { ConnectButton } from '@components/connection';
+import { AppStoreProvider } from '@stores';
+import { WalletConnector } from '@components';
 
 const AppLayout = ({ children }: { children: ReactNode }) => {
-  const { walletPublicKey } = useAppStore();
   return (
     <main>
-      <body className="h-screen w-screen">
+      <div className="h-screen w-screen relative z-0">
         <header className="w-screen h-24 py-5 px-8 flex items-center gap-4">
           <nav>
-            <a href="/">PayMe</a>
+            <a href="/">Faktor</a>
           </nav>
-          <aside>{walletPublicKey ? <DisconnectButton /> : <ConnectButton />}</aside>
+          <WalletConnector />
         </header>
         {children}
-      </body>
+      </div>
     </main>
   );
 };

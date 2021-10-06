@@ -15,12 +15,12 @@ export interface IWalletInfo {
 export const walletInfo = (): IWalletInfo[] => {
   const info: IWalletInfo[] = [];
 
-  info[WalletProviders.Sollet] = {
+  info[0] = {
     id: WalletProviders.Sollet,
     name: 'Sollet',
     icon: sollet
   };
-  info[WalletProviders.Phantom] = {
+  info[1] = {
     id: WalletProviders.Phantom,
     name: 'Phantom',
     icon: phantom

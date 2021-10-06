@@ -1,12 +1,9 @@
-import { createContext, useContext, useState } from 'react';
+import { DEFAULT_CLUSTER, ICluster } from '@core';
+import { createContext, Dispatch, SetStateAction, useContext, useState } from 'react';
 
 interface IConnectionContext {
-  walletPickerOpen: boolean;
-  setWalletPickerOpen: any;
-  walletBusy: boolean;
-  setWalletBusy: any;
-  walletError: string | null;
-  setWalletError: (error: string | null) => void;
+  cluster: ICluster;
+  setCluster: Dispatch<SetStateAction<ICluster>>;
 }
 
 const ConnectionContext = createContext<IConnectionContext | undefined>(undefined);
@@ -18,19 +15,13 @@ export const useConnection = () => {
 };
 
 export const ConnectionProvider: React.FC = ({ children }) => {
-  const [walletPickerOpen, setWalletPickerOpen] = useState(false);
-  const [walletBusy, setWalletBusy] = useState(false);
-  const [walletError, setWalletError] = useState<string | null>(null);
+  const [cluster, setCluster] = useState(DEFAULT_CLUSTER);
 
   return (
     <ConnectionContext.Provider
       value={{
-        walletPickerOpen,
-        setWalletPickerOpen,
-        walletBusy,
-        setWalletBusy,
-        walletError,
-        setWalletError
+        cluster,
+        setCluster
       }}
     >
       {children}

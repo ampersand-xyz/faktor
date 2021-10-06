@@ -2,13 +2,14 @@ import { IWallet } from '@core';
 import { WalletNotFoundError } from '@solana/wallet-adapter-base';
 import { PublicKey } from '@solana/web3.js';
 import { eventing } from '@utils';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 export interface IWalletContext {
   wallet: IWallet | null;
   walletPublicKey: PublicKey | null;
-  disconnectWallet: () => any;
-  connectWallet: () => any;
+  connected: boolean;
+  disconnectWallet: () => void;
+  connectWallet: (selectedWallet: IWallet) => void;
 }
 
 const WalletContext = createContext<IWalletContext | null>(null);
@@ -24,16 +25,20 @@ export const WalletProvider: React.FC = ({ children }) => {
 
   const [error, setError] = useState<string | null>(null);
 
+  const connected = useMemo(() => Boolean(walletPublicKey), [walletPublicKey]);
+
   const clearWalletState = () => {
     setWalletPublicKey(null);
     setWallet(null);
   };
 
-  const connectWallet = () => {
-    if (wallet?.publicKey) {
-      const walletPublicKey = wallet.publicKey;
-      setWalletPublicKey(walletPublicKey);
-      eventing.emit('connected');
+  const connectWallet = async (selectedWallet: IWallet) => {
+    await selectedWallet.connect();
+
+    if (selectedWallet.publicKey) {
+      console.log(`SUCCESS: WALLET CONNECTED - ${selectedWallet.publicKey.toBase58()}`);
+      setWallet(selectedWallet);
+      setWalletPublicKey(selectedWallet.publicKey);
     }
   };
 
@@ -75,7 +80,9 @@ export const WalletProvider: React.FC = ({ children }) => {
   }
 
   return (
-    <WalletContext.Provider value={{ wallet, walletPublicKey, disconnectWallet, connectWallet }}>
+    <WalletContext.Provider
+      value={{ wallet, walletPublicKey, connected, disconnectWallet, connectWallet }}
+    >
       {children}
     </WalletContext.Provider>
   );

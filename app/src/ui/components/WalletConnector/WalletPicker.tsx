@@ -1,25 +1,14 @@
 import { IWalletInfo, walletInfo } from '@core';
 
 export const WalletPicker = function _WalletPicker({
-  open,
-  onSelect,
-  onClose
+  onSelect
 }: {
-  open: boolean;
   onSelect: (info: IWalletInfo) => void;
-  onClose: () => void;
 }) {
-  if (!open) {
-    return null;
-  }
-
   const walletProvider = walletInfo();
 
   return (
-    <div className="wallet-picker-modal">
-      <button onClick={onClose}>
-        <span>X</span>
-      </button>
+    <>
       <ul>
         {walletProvider.map((item) => {
           return (
@@ -32,6 +21,6 @@ export const WalletPicker = function _WalletPicker({
           );
         })}
       </ul>
-    </div>
+    </>
   );
 };
