@@ -81,6 +81,7 @@ describe("faktor", () => {
     assert.ok(invoice.debtor.toString() === bob.publicKey.toString());
     assert.ok(invoice.collector.toString() === charlie.publicKey.toString());
     assert.ok(invoice.initialDebt.toString() === "1234");
+    assert.ok(invoice.paidDebt.toString() === "0");
     assert.ok(invoice.remainingDebt.toString() === "1234");
     assert.ok(invoice.memo === "Please pay me 1234 SOL!");
     assert.ok(invoice.status.open !== undefined);
@@ -110,6 +111,7 @@ describe("faktor", () => {
     assert.ok(invoice.debtor.toString() === bob.publicKey.toString());
     assert.ok(invoice.collector.toString() === charlie.publicKey.toString());
     assert.ok(invoice.initialDebt.toString() === "1234");
+    assert.ok(invoice.paidDebt.toString() === "1234");
     assert.ok(invoice.remainingDebt.toString() === "0");
     assert.ok(invoice.memo === "Please pay me 1234 SOL!");
     assert.ok(invoice.status.paid !== undefined);
@@ -139,6 +141,7 @@ describe("faktor", () => {
     assert.ok(invoice.debtor.toString() === bob.publicKey.toString());
     assert.ok(invoice.collector.toString() === charlie.publicKey.toString());
     assert.ok(invoice.initialDebt.toString() === "1234");
+    assert.ok(invoice.paidDebt.toString() === "1000");
     assert.ok(invoice.remainingDebt.toString() === "234");
     assert.ok(invoice.memo === "Please pay me 1234 SOL!");
     assert.ok(invoice.status.open !== undefined);
@@ -165,6 +168,7 @@ describe("faktor", () => {
     assert.ok(invoice.debtor.toString() === bob.publicKey.toString());
     assert.ok(invoice.collector.toString() === charlie.publicKey.toString());
     assert.ok(invoice.initialDebt.toString() === "1234");
+    assert.ok(invoice.paidDebt.toString() === "0");
     assert.ok(invoice.remainingDebt.toString() === "0");
     assert.ok(invoice.memo === "Please pay me 1234 SOL!");
     assert.ok(invoice.status.void !== undefined);

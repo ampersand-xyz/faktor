@@ -18,6 +18,7 @@ pub mod faktor {
     pub fn issue_invoice(ctx: Context<IssueInvoice>, amount: u64, memo: String) -> ProgramResult {
         let invoice = &mut ctx.accounts.invoice;
         invoice.initial_debt = amount;
+        invoice.paid_debt = 0;
         invoice.remaining_debt = amount;
         invoice.issuer = *ctx.accounts.issuer.key;
         invoice.debtor = *ctx.accounts.debtor.key;
@@ -51,8 +52,9 @@ pub mod faktor {
                 ctx.accounts.system_program.to_account_info().clone(),
             ],
         )?;
-        // Draw down the invoice's remaining debt
+        // Update the invoice's debt balances
         invoice.remaining_debt = invoice.remaining_debt - amount;
+        invoice.paid_debt = invoice.paid_debt + amount;
         // If there's no remaining debt, mark the invoice as pid
         if invoice.remaining_debt <= 0 {
             invoice.status = InvoiceStatus::Paid;
@@ -76,7 +78,7 @@ pub mod faktor {
 #[derive(Accounts)]
 #[instruction(amount: u64, memo: String)]
 pub struct IssueInvoice<'info> {
-    #[account(init, payer = issuer, space = 8 + 32 + 32 + 32 + 8 + 8 + 4 + memo.len() + 4)]
+    #[account(init, payer = issuer, space = 8 + 32 + 32 + 32 + 8 + 8 + 8 + 4 + memo.len() + 4)]
     pub invoice: Account<'info, Invoice>,
     #[account(mut)]
     pub issuer: Signer<'info>,
@@ -112,6 +114,7 @@ pub struct Invoice {
     pub debtor: Pubkey,
     pub collector: Pubkey,
     pub initial_debt: u64,
+    pub paid_debt: u64,
     pub remaining_debt: u64,
     pub memo: String,
     pub status: InvoiceStatus,
