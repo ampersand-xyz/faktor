@@ -12,13 +12,14 @@ declare_id!("8BHW97BHkSKUHjTxHd6g7eGRfLxQfmXniEMcAskxQTKi");
 #[program]
 pub mod faktor {
     use super::*;
-    pub fn issue_invoice(ctx: Context<IssueInvoice>, amount: u64) -> ProgramResult {
+    pub fn issue_invoice(ctx: Context<IssueInvoice>, amount: u64, memo: String) -> ProgramResult {
         let invoice = &mut ctx.accounts.invoice;
         invoice.initial_debt = amount;
         invoice.remaining_debt = amount;
         invoice.issuer = *ctx.accounts.issuer.key;
         invoice.debtor = *ctx.accounts.debtor.key;
         invoice.collector = *ctx.accounts.collector.key;
+        invoice.memo = memo; // TODO: Max size limit on memo length?
         return Ok(());
     }
 
@@ -55,8 +56,9 @@ pub mod faktor {
 }
 
 #[derive(Accounts)]
+#[instruction(amount: u64, memo: String)]
 pub struct IssueInvoice<'info> {
-    #[account(init, payer = issuer, space = 8 + 32 + 32 + 32 + 8 + 8)]
+    #[account(init, payer = issuer, space = 8 + 32 + 32 + 32 + 8 + 8 + 4 + memo.len())]
     pub invoice: Account<'info, Invoice>,
     #[account(mut)]
     pub issuer: Signer<'info>,
@@ -93,6 +95,7 @@ pub struct Invoice {
     pub collector: Pubkey,
     pub initial_debt: u64,
     pub remaining_debt: u64,
+    pub memo: String,
     // pub status: InvoiceStatus,
 }
 
