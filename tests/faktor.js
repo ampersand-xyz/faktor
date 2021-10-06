@@ -25,7 +25,8 @@ describe("faktor", () => {
   async function issueInvoice(amount) {
     const invoice = Keypair.generate();
     const bnAmount = new BN(amount);
-    await program.rpc.issueInvoice(bnAmount, {
+    const memo = `Please pay me ${amount} SOL!`;
+    await program.rpc.issueInvoice(bnAmount, memo, {
       accounts: {
         invoice: invoice.publicKey,
         issuer: alice.publicKey,
@@ -76,11 +77,12 @@ describe("faktor", () => {
     // Validation
     const invoice = await program.account.invoice.fetch(invoicePubkey);
     const finalBalances = await getBalances();
-    assert.ok(invoice.issuer.toString() == alice.publicKey);
-    assert.ok(invoice.debtor.toString() == bob.publicKey);
-    assert.ok(invoice.collector.toString() == charlie.publicKey);
-    assert.ok(invoice.initialDebt.toString() == "1234");
-    assert.ok(invoice.remainingDebt.toString() == "1234");
+    assert.ok(invoice.issuer.toString() === alice.publicKey.toString());
+    assert.ok(invoice.debtor.toString() === bob.publicKey.toString());
+    assert.ok(invoice.collector.toString() === charlie.publicKey.toString());
+    assert.ok(invoice.initialDebt.toString() === "1234");
+    assert.ok(invoice.remainingDebt.toString() === "1234");
+    assert.ok(invoice.memo === "Please pay me 1234 SOL!");
     assert.ok(finalBalances.alice < initialBalances.alice);
     assert.ok(finalBalances.bob === initialBalances.bob);
     assert.ok(finalBalances.chalie === initialBalances.chalie);
@@ -103,11 +105,12 @@ describe("faktor", () => {
     // Validation
     const invoice = await program.account.invoice.fetch(invoicePubkey);
     const finalBalances = await getBalances();
-    assert.ok(invoice.issuer.toString() == alice.publicKey);
-    assert.ok(invoice.debtor.toString() == bob.publicKey);
-    assert.ok(invoice.collector.toString() == charlie.publicKey);
-    assert.ok(invoice.initialDebt.toString() == "1234");
-    assert.ok(invoice.remainingDebt.toString() == "0");
+    assert.ok(invoice.issuer.toString() === alice.publicKey.toString());
+    assert.ok(invoice.debtor.toString() === bob.publicKey.toString());
+    assert.ok(invoice.collector.toString() === charlie.publicKey.toString());
+    assert.ok(invoice.initialDebt.toString() === "1234");
+    assert.ok(invoice.remainingDebt.toString() === "0");
+    assert.ok(invoice.memo === "Please pay me 1234 SOL!");
     assert.ok(finalBalances.alice === initialBalances.alice);
     assert.ok(finalBalances.bob === initialBalances.bob - amount);
     assert.ok(finalBalances.chalie === initialBalances.chalie + amount);
@@ -130,11 +133,12 @@ describe("faktor", () => {
     // Validation
     const invoice = await program.account.invoice.fetch(invoicePubkey);
     const finalBalances = await getBalances();
-    assert.ok(invoice.issuer.toString() == alice.publicKey);
-    assert.ok(invoice.debtor.toString() == bob.publicKey);
-    assert.ok(invoice.collector.toString() == charlie.publicKey);
-    assert.ok(invoice.initialDebt.toString() == "1234");
-    assert.ok(invoice.remainingDebt.toString() == "234");
+    assert.ok(invoice.issuer.toString() === alice.publicKey.toString());
+    assert.ok(invoice.debtor.toString() === bob.publicKey.toString());
+    assert.ok(invoice.collector.toString() === charlie.publicKey.toString());
+    assert.ok(invoice.initialDebt.toString() === "1234");
+    assert.ok(invoice.remainingDebt.toString() === "234");
+    assert.ok(invoice.memo === "Please pay me 1234 SOL!");
     assert.ok(finalBalances.alice === initialBalances.alice);
     assert.ok(finalBalances.bob === initialBalances.bob - amount);
     assert.ok(finalBalances.chalie === initialBalances.chalie + amount);
@@ -154,11 +158,12 @@ describe("faktor", () => {
     // Validation
     const invoice = await program.account.invoice.fetch(invoicePubkey);
     const finalBalances = await getBalances();
-    assert.ok(invoice.issuer.toString() == alice.publicKey);
-    assert.ok(invoice.debtor.toString() == bob.publicKey);
-    assert.ok(invoice.collector.toString() == charlie.publicKey);
-    assert.ok(invoice.initialDebt.toString() == "1234");
-    assert.ok(invoice.remainingDebt.toString() == "0");
+    assert.ok(invoice.issuer.toString() === alice.publicKey.toString());
+    assert.ok(invoice.debtor.toString() === bob.publicKey.toString());
+    assert.ok(invoice.collector.toString() === charlie.publicKey.toString());
+    assert.ok(invoice.initialDebt.toString() === "1234");
+    assert.ok(invoice.remainingDebt.toString() === "0");
+    assert.ok(invoice.memo === "Please pay me 1234 SOL!");
     assert.ok(finalBalances.alice === initialBalances.alice);
     assert.ok(finalBalances.bob === initialBalances.bob);
     assert.ok(finalBalances.chalie === initialBalances.chalie);
