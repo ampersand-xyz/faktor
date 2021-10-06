@@ -83,6 +83,7 @@ describe("faktor", () => {
     assert.ok(invoice.initialDebt.toString() === "1234");
     assert.ok(invoice.remainingDebt.toString() === "1234");
     assert.ok(invoice.memo === "Please pay me 1234 SOL!");
+    assert.ok(invoice.status.open !== undefined);
     assert.ok(finalBalances.alice < initialBalances.alice);
     assert.ok(finalBalances.bob === initialBalances.bob);
     assert.ok(finalBalances.chalie === initialBalances.chalie);
@@ -111,6 +112,7 @@ describe("faktor", () => {
     assert.ok(invoice.initialDebt.toString() === "1234");
     assert.ok(invoice.remainingDebt.toString() === "0");
     assert.ok(invoice.memo === "Please pay me 1234 SOL!");
+    assert.ok(invoice.status.paid !== undefined);
     assert.ok(finalBalances.alice === initialBalances.alice);
     assert.ok(finalBalances.bob === initialBalances.bob - amount);
     assert.ok(finalBalances.chalie === initialBalances.chalie + amount);
@@ -139,6 +141,7 @@ describe("faktor", () => {
     assert.ok(invoice.initialDebt.toString() === "1234");
     assert.ok(invoice.remainingDebt.toString() === "234");
     assert.ok(invoice.memo === "Please pay me 1234 SOL!");
+    assert.ok(invoice.status.open !== undefined);
     assert.ok(finalBalances.alice === initialBalances.alice);
     assert.ok(finalBalances.bob === initialBalances.bob - amount);
     assert.ok(finalBalances.chalie === initialBalances.chalie + amount);
@@ -164,6 +167,7 @@ describe("faktor", () => {
     assert.ok(invoice.initialDebt.toString() === "1234");
     assert.ok(invoice.remainingDebt.toString() === "0");
     assert.ok(invoice.memo === "Please pay me 1234 SOL!");
+    assert.ok(invoice.status.void !== undefined);
     assert.ok(finalBalances.alice === initialBalances.alice);
     assert.ok(finalBalances.bob === initialBalances.bob);
     assert.ok(finalBalances.chalie === initialBalances.chalie);
