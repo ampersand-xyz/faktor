@@ -1,7 +1,7 @@
-import { useAppStore } from '@stores';
+import { useAppContext } from '@stores';
 
 export const Home = () => {
-  const { connected, walletPublicKey } = useAppStore();
+  const { connected, walletPublicKey } = useAppContext();
 
   return (
     <>

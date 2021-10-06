@@ -1,7 +1,7 @@
 import { Routes } from './routes';
 import { ReactNode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { AppStoreProvider } from '@stores';
+import { AppContextProvider } from '@stores';
 import { WalletConnector } from '@components';
 
 const AppLayout = ({ children }: { children: ReactNode }) => {
@@ -23,11 +23,11 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
 export default function AppWithProviders() {
   return (
     <BrowserRouter>
-      <AppStoreProvider>
+      <AppContextProvider>
         <AppLayout>
           <Routes />
         </AppLayout>
-      </AppStoreProvider>
+      </AppContextProvider>
     </BrowserRouter>
   );
 }

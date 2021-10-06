@@ -1,5 +1,5 @@
 import { createWallet, IWalletInfo } from '@core';
-import { useAppStore } from '@stores';
+import { useAppContext } from '@stores';
 import React, { HTMLAttributes, useCallback, useState } from 'react';
 import { WalletPicker } from './WalletPicker';
 
@@ -15,7 +15,7 @@ export const Button: React.FC<HTMLAttributes<HTMLButtonElement>> = ({ children, 
 };
 
 export const WalletConnector = () => {
-  const { disconnectWallet, connectWallet, connected, cluster } = useAppStore();
+  const { disconnectWallet, connectWallet, connected, cluster } = useAppContext();
 
   const [walletPickerOpen, setWalletPickerOpen] = useState(false);
 

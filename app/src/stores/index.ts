@@ -1,3 +1,3 @@
-export * from './AppStore';
+export * from './AppContext';
 export * from './ConnectionContext';
-export * from './WalletStore';
+export * from './WalletContext';

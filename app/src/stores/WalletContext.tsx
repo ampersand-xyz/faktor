@@ -1,7 +1,6 @@
 import { IWallet } from '@core';
 import { WalletNotFoundError } from '@solana/wallet-adapter-base';
 import { PublicKey } from '@solana/web3.js';
-import { eventing } from '@utils';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 export interface IWalletContext {
@@ -27,11 +26,6 @@ export const WalletProvider: React.FC = ({ children }) => {
 
   const connected = useMemo(() => Boolean(walletPublicKey), [walletPublicKey]);
 
-  const clearWalletState = () => {
-    setWalletPublicKey(null);
-    setWallet(null);
-  };
-
   const connectWallet = async (selectedWallet: IWallet) => {
     await selectedWallet.connect();
 
@@ -45,7 +39,8 @@ export const WalletProvider: React.FC = ({ children }) => {
   const disconnectWallet = () => {
     if (wallet) {
       wallet.disconnect();
-      clearWalletState();
+      setWalletPublicKey(null);
+      setWallet(null);
     }
   };
 
