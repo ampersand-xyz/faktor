@@ -4,7 +4,10 @@ use {
         solana_program::{program::invoke, system_instruction, system_program},
         AnchorSerialize,
     },
-    std::{clone::Clone, cmp::min},
+    std::{
+        clone::Clone,
+        cmp::{min, PartialEq},
+    },
 };
 
 declare_id!("8BHW97BHkSKUHjTxHd6g7eGRfLxQfmXniEMcAskxQTKi");
@@ -20,11 +23,16 @@ pub mod faktor {
         invoice.debtor = *ctx.accounts.debtor.key;
         invoice.collector = *ctx.accounts.collector.key;
         invoice.memo = memo; // TODO: Max size limit on memo length?
+        invoice.status = InvoiceStatus::Open;
         return Ok(());
     }
 
     pub fn pay_invoice(ctx: Context<PayInvoice>, amount: u64) -> ProgramResult {
+        // Validate the invoice is open
         let invoice = &mut ctx.accounts.invoice;
+        if invoice.status != InvoiceStatus::Open {
+            return Err(ErrorCode::InvoiceNotOpen.into());
+        }
         let amount = min(amount, invoice.remaining_debt);
         // Verify debtor has enough SOL to pay the amount
         if ctx.accounts.debtor.lamports() < amount {
@@ -45,12 +53,22 @@ pub mod faktor {
         )?;
         // Draw down the invoice's remaining debt
         invoice.remaining_debt = invoice.remaining_debt - amount;
+        // If there's no remaining debt, mark the invoice as pid
+        if invoice.remaining_debt <= 0 {
+            invoice.status = InvoiceStatus::Paid;
+        }
         return Ok(());
     }
 
     pub fn void_invoice(ctx: Context<VoidInvoice>) -> ProgramResult {
+        // Validate the invoice is open
         let invoice = &mut ctx.accounts.invoice;
+        if invoice.status != InvoiceStatus::Open {
+            return Err(ErrorCode::InvoiceNotOpen.into());
+        }
+        // Void the invoice's remaining debt
         invoice.remaining_debt = 0;
+        invoice.status = InvoiceStatus::Void;
         return Ok(());
     }
 }
@@ -58,7 +76,7 @@ pub mod faktor {
 #[derive(Accounts)]
 #[instruction(amount: u64, memo: String)]
 pub struct IssueInvoice<'info> {
-    #[account(init, payer = issuer, space = 8 + 32 + 32 + 32 + 8 + 8 + 4 + memo.len())]
+    #[account(init, payer = issuer, space = 8 + 32 + 32 + 32 + 8 + 8 + 4 + memo.len() + 4)]
     pub invoice: Account<'info, Invoice>,
     #[account(mut)]
     pub issuer: Signer<'info>,
@@ -96,25 +114,20 @@ pub struct Invoice {
     pub initial_debt: u64,
     pub remaining_debt: u64,
     pub memo: String,
-    // pub status: InvoiceStatus,
+    pub status: InvoiceStatus,
 }
 
-// pub enum InvoiceStatus {
-//     Open,
-//     Paid,
-//     Void,
-// }
-
-// impl Clone for InvoiceStatus {
-//     fn clone(&self) -> Self {
-//         return *self;
-//     }
-// }
-
-// impl AnchorSerialize for InvoiceStatus {}
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
+pub enum InvoiceStatus {
+    Open,
+    Paid,
+    Void,
+}
 
 #[error]
 pub enum ErrorCode {
     #[msg("Not enough SOL")]
     NotEnoughSOL,
+    #[msg("This invoice is not open")]
+    InvoiceNotOpen,
 }
