@@ -43,8 +43,10 @@ export const WalletProvider: React.FC = ({ children }) => {
   };
 
   const disconnectWallet = () => {
-    clearWalletState();
-    eventing.emit('disconnected');
+    if (wallet) {
+      wallet.disconnect();
+      clearWalletState();
+    }
   };
 
   useEffect(() => {
