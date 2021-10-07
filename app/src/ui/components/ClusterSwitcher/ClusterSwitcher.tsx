@@ -1,5 +1,5 @@
 import { ClusterID, CLUSTERS, ICluster } from '@core';
-import { useConnection, useWalletContext } from '@stores';
+import { useConnection, useWallet } from '@stores';
 import { useCallback, useState } from 'react';
 import { CustomSwitcherItem } from './CustomSwitcherItem';
 import { SwitcherItem, SwitcherItemData } from './SwitcherItem';
@@ -8,7 +8,7 @@ import { RightPanel } from './RightPanel';
 export const ClusterSwitcher = () => {
   const { cluster, customCluster, switchCluster } = useConnection();
 
-  const { disconnectWallet } = useWalletContext();
+  const { disconnectWallet } = useWallet();
 
   const [open, setOpen] = useState(false);
   const [connecting, setConnecting] = useState(false);

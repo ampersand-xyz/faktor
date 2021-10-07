@@ -12,7 +12,7 @@ export interface IWalletContext {
 }
 
 const WalletContext = createContext<IWalletContext | null>(null);
-export const useWalletContext = () => {
+export const useWallet = () => {
   const context = useContext(WalletContext);
   if (!context) throw new Error();
   return context;
