@@ -1,10 +1,22 @@
 import { IWalletInfo, walletInfo } from '@core';
+import { useOnClickOutside } from '@ui/hooks';
+import { useRef } from 'react';
 
-export const WalletPicker = ({ onSelect }: { onSelect: (info: IWalletInfo) => void }) => {
+export const WalletPicker = ({
+  onSelect,
+  onClickOutside
+}: {
+  onSelect: (info: IWalletInfo) => void;
+  onClickOutside: () => void;
+}) => {
   const walletProvider = walletInfo();
 
+  const pickerRef = useRef(null);
+
+  useOnClickOutside(pickerRef, onClickOutside);
+
   return (
-    <>
+    <div ref={pickerRef}>
       <ul>
         {walletProvider.map((item) => {
           return (
@@ -17,6 +29,6 @@ export const WalletPicker = ({ onSelect }: { onSelect: (info: IWalletInfo) => vo
           );
         })}
       </ul>
-    </>
+    </div>
   );
 };

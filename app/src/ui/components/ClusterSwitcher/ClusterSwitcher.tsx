@@ -20,7 +20,7 @@ export const ClusterSwitcher = () => {
     setOpen(false);
   }, []);
 
-  const handleSelect = useCallback(async (selected: ICluster) => {
+  const handleSelect = async (selected: ICluster) => {
     setConnecting(true);
     setError(null);
     try {
@@ -31,7 +31,7 @@ export const ClusterSwitcher = () => {
     } finally {
       setConnecting(false);
     }
-  }, []);
+  };
 
   const handleSelectCustom = (clusterUrl: string) =>
     handleSelect({

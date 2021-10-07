@@ -1,7 +1,6 @@
 import { createWallet, IWalletInfo } from '@core';
 import { useConnection, useWallet } from '@stores';
-import { useOnClickOutside } from '@ui/hooks';
-import React, { HTMLAttributes, useCallback, useRef, useState } from 'react';
+import React, { HTMLAttributes, useCallback, useState } from 'react';
 import { WalletPicker } from './WalletPicker';
 
 export const Button: React.FC<HTMLAttributes<HTMLButtonElement>> = ({ children, ...props }) => {
@@ -35,10 +34,6 @@ export const WalletConnector = () => {
     closeWalletPicker();
   };
 
-  const pickerRef = useRef(null);
-
-  useOnClickOutside(pickerRef, closeWalletPicker);
-
   return (
     <div>
       {connected ? (
@@ -47,12 +42,7 @@ export const WalletConnector = () => {
         <Button onClick={openWalletPicker}>Connect Wallet</Button>
       )}
       {walletPickerOpen && (
-        <div ref={pickerRef}>
-          <button onClick={closeWalletPicker}>
-            <span>X</span>
-          </button>
-          <WalletPicker onSelect={handleSelectWallet} />
-        </div>
+        <WalletPicker onClickOutside={closeWalletPicker} onSelect={handleSelectWallet} />
       )}
     </div>
   );
