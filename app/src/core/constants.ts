@@ -31,7 +31,7 @@ export const CLUSTERS: ICluster[] = [
   }
 ];
 
-export const DEFAULT_CLUSTER_INDEX = 3;
+export const DEFAULT_CLUSTER_INDEX = process.env.NODE_ENV === 'production' ? 0 : 3;
 export const DEFAULT_CLUSTER = CLUSTERS[DEFAULT_CLUSTER_INDEX];
 
 // Programs hashes
