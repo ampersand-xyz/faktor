@@ -1,9 +1,8 @@
-import { CashIcon } from "@heroicons/react/solid";
-import { BN, Program, Provider, web3 } from "@project-serum/anchor";
-import { useWallet } from "@solana/wallet-adapter-react";
-import { Connection, PublicKey } from "@solana/web3.js";
-import { useEffect, useState } from "react";
-import idl from "../../idl.json";
+import { CashIcon } from '@heroicons/react/solid';
+import { BN, Program, Provider, Wallet, web3 } from '@project-serum/anchor';
+import { Connection, PublicKey } from '@solana/web3.js';
+import { useEffect, useState } from 'react';
+import idl from '../../idl.json';
 
 const { SystemProgram, Keypair } = web3;
 
@@ -13,35 +12,34 @@ const bob = Keypair.generate();
 const charlie = Keypair.generate();
 
 const opts: web3.ConfirmOptions = {
-  preflightCommitment: "processed",
+  preflightCommitment: 'processed'
 };
 
 const statusStyles = {
-  open: "bg-yellow-100 text-yellow-800",
-  paid: "bg-green-100 text-green-800",
-  rejected: "bg-red-100 text-gray-800",
-  spam: "bg-orange-100 text-gray-800",
-  void: "bg-indigo-100 text-gray-800",
+  open: 'bg-yellow-100 text-yellow-800',
+  paid: 'bg-green-100 text-green-800',
+  rejected: 'bg-red-100 text-gray-800',
+  spam: 'bg-orange-100 text-gray-800',
+  void: 'bg-indigo-100 text-gray-800'
 };
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(" ");
+function classNames(...classes: string[]) {
+  return classes.filter(Boolean).join(' ');
 }
 
-export const Invoices = () => {
-  const [invoices, setInvoices] = useState([]);
-  const wallet = useWallet();
+export const Invoices = ({ wallet }: { wallet: Wallet }) => {
+  const [invoices, setInvoices] = useState<any[]>([]);
 
   async function getProvider() {
     // Create the provider and return it to the caller
     // Network set to local network for now
-    const network = "http://127.0.0.1:8899";
+    const network = 'http://127.0.0.1:8899';
     const connection = new Connection(network, opts.preflightCommitment);
     const provider = new Provider(connection, wallet, opts);
     return provider;
   }
 
-  async function issueInvoice(amount) {
+  async function issueInvoice(amount: any) {
     const provider = await getProvider();
     const program = new Program(idl as any, programID, provider);
 
@@ -57,18 +55,16 @@ export const Invoices = () => {
           issuer: provider.wallet.publicKey,
           debtor: bob.publicKey,
           collector: charlie.publicKey,
-          systemProgram: SystemProgram.programId,
+          systemProgram: SystemProgram.programId
         },
-        signers: [invoice],
+        signers: [invoice]
       });
 
-      const issuedInvoice = await program.account.invoice.fetch(
-        invoice.publicKey
-      );
+      const issuedInvoice = await program.account.invoice.fetch(invoice.publicKey);
       console.log(issuedInvoice);
       return issuedInvoice;
     } catch (err) {
-      console.log("Error Issuing Invoice: ", err);
+      console.log('Error Issuing Invoice: ', err);
     }
   }
 
@@ -125,9 +121,7 @@ export const Invoices = () => {
                       {invoices && invoices.length > 1 ? (
                         <tbody className="bg-white divide-y divide-gray-200">
                           {invoices.map((invoice, i) => {
-                            const status = Object.keys(
-                              invoice.account.status
-                            )[0];
+                            const status = Object.keys(invoice.account.status)[0];
 
                             const pubKey = invoice.publicKey.toString();
 
@@ -189,10 +183,7 @@ export const Invoices = () => {
                                             gradientUnits="userSpaceOnUse"
                                           >
                                             <stop stop-color="#00FFA3" />
-                                            <stop
-                                              offset="1"
-                                              stop-color="#DC1FFF"
-                                            />
+                                            <stop offset="1" stop-color="#DC1FFF" />
                                           </linearGradient>
                                           <linearGradient
                                             id="paint1_linear"
@@ -203,10 +194,7 @@ export const Invoices = () => {
                                             gradientUnits="userSpaceOnUse"
                                           >
                                             <stop stop-color="#00FFA3" />
-                                            <stop
-                                              offset="1"
-                                              stop-color="#DC1FFF"
-                                            />
+                                            <stop offset="1" stop-color="#DC1FFF" />
                                           </linearGradient>
                                           <linearGradient
                                             id="paint2_linear"
@@ -217,17 +205,10 @@ export const Invoices = () => {
                                             gradientUnits="userSpaceOnUse"
                                           >
                                             <stop stop-color="#00FFA3" />
-                                            <stop
-                                              offset="1"
-                                              stop-color="#DC1FFF"
-                                            />
+                                            <stop offset="1" stop-color="#DC1FFF" />
                                           </linearGradient>
                                           <clipPath id="clip0">
-                                            <rect
-                                              width="397.7"
-                                              height="311.7"
-                                              fill="white"
-                                            />
+                                            <rect width="397.7" height="311.7" fill="white" />
                                           </clipPath>
                                         </defs>
                                       </svg>
@@ -238,7 +219,7 @@ export const Invoices = () => {
                                   <span
                                     className={classNames(
                                       statusStyles[status],
-                                      "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize"
+                                      'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize'
                                     )}
                                   >
                                     {status}
@@ -264,8 +245,8 @@ export const Invoices = () => {
                     >
                       <div className="hidden sm:block">
                         <p className="text-sm text-gray-700">
-                          Showing <span className="font-medium">1</span> to{" "}
-                          <span className="font-medium">10</span> of{" "}
+                          Showing <span className="font-medium">1</span> to{' '}
+                          <span className="font-medium">10</span> of{' '}
                           <span className="font-medium">20</span> results
                         </p>
                       </div>
