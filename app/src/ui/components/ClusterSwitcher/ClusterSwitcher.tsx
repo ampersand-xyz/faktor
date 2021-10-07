@@ -45,13 +45,13 @@ export const ClusterSwitcher = () => {
       {connecting && <span>Connecting to {cluster.url}...</span>}
       {error && <p>Error: {error}</p>}
       <button
-        className="flex justify-start items-center px-2 py-5 mx-auto rounded-3xl bg-gray-700 text-lg font-semibold"
+        className="flex justify-start items-center px-3 h-11 mx-auto text-sm rounded-xl bg-white bg-opacity-0 border-2 border-gray-500 font-semibold hover:bg-opacity-5"
         onClick={openRightPanel}
       >
         {cluster.name}
       </button>
       {open && (
-        <RightPanel title="Choose a Cluster" onHide={closeRightPanel}>
+        <RightPanel title="Change Network" onHide={closeRightPanel}>
           <Switcher
             current={cluster}
             customCluster={customCluster}

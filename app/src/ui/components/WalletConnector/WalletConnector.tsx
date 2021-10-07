@@ -7,7 +7,7 @@ import { WalletPicker } from './WalletPicker';
 export const Button: React.FC<HTMLAttributes<HTMLButtonElement>> = ({ children, ...props }) => {
   return (
     <button
-      className="flex items-center justify-center p-5 bg-none text-gray-100 hover:text-white font-semibold"
+      className="flex items-center justify-center p-5 bg-blue-600 rounded-lg hover:bg-blue-700 text-gray-50 hover:text-white text-sm h-11 font-semibold"
       {...props}
     >
       {children}
