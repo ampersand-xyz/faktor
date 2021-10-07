@@ -3,7 +3,9 @@ import { BN, Program, Provider, web3 } from '@project-serum/anchor';
 import { Connection, PublicKey } from '@solana/web3.js';
 import { useConnectedApp } from '@stores';
 import { useEffect, useState } from 'react';
-import idl from '../../idl.json';
+import idl from '../../../idl.json';
+
+import { InvoicesHeader } from './InvoicesHeader';
 
 const { SystemProgram, Keypair } = web3;
 
@@ -92,9 +94,7 @@ export const Invoices = () => {
         <main className="relative z-0 flex-1 pb-8 overflow-y-auto">
           {/* Page header */}
           <div className="mt-8">
-            <h2 className="max-w-6xl px-4 mx-auto mt-8 text-lg font-medium leading-6 text-gray-900 sm:px-6 lg:px-8">
-              Recent activity
-            </h2>
+            <InvoicesHeader />
             {/* Activity table (small breakpoint and up) */}
             <div className="hidden sm:block">
               <div className="max-w-6xl px-4 mx-auto sm:px-6 lg:px-8">
