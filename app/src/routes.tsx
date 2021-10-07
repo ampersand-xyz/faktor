@@ -1,27 +1,30 @@
 import { Home, Invoices } from '@pages';
 import { Wallet } from '@project-serum/anchor';
-import { useWallet } from '@stores';
+import { useWallet, ConnectedAppContext } from '@stores';
 import { useMemo } from 'react';
 import { Switch, Route } from 'react-router-dom';
 
 export const Routes = () => {
-  const { wallet, walletPublicKey } = useWallet();
+  const { wallet, disconnectWallet } = useWallet();
 
-  const anchorWallet = useMemo(() => {
-    return wallet
+  const connectedWallet = useMemo(() => {
+    return wallet && wallet.publicKey && wallet.signAllTransactions && wallet.signAllTransactions
       ? ({
-          publicKey: walletPublicKey,
+          publicKey: wallet.publicKey,
           signTransaction: wallet.signTransaction,
           signAllTransactions: wallet.signAllTransactions
         } as Wallet)
       : null;
-  }, [wallet]);
+  }, [wallet, wallet?.publicKey, wallet?.signTransaction, wallet?.signAllTransactions]);
 
   return (
     <Switch>
-      <Route exact path="/" component={() => <Home />} />
-      {anchorWallet && (
-        <Route exact path="/" component={() => <Invoices wallet={anchorWallet} />} />
+      {connectedWallet ? (
+        <ConnectedAppContext.Provider value={{ wallet: connectedWallet, disconnectWallet }}>
+          <Route exact path="/" component={() => <Invoices />} />
+        </ConnectedAppContext.Provider>
+      ) : (
+        <Route exact path="/" component={() => <Home />} />
       )}
     </Switch>
   );
