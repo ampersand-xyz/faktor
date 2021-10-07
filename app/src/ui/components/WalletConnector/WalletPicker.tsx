@@ -1,10 +1,6 @@
 import { IWalletInfo, walletInfo } from '@core';
 
-export const WalletPicker = function _WalletPicker({
-  onSelect
-}: {
-  onSelect: (info: IWalletInfo) => void;
-}) {
+export const WalletPicker = ({ onSelect }: { onSelect: (info: IWalletInfo) => void }) => {
   const walletProvider = walletInfo();
 
   return (
