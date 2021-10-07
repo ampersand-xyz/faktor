@@ -1,11 +1,10 @@
 import { Routes } from './routes';
 import { ReactNode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { AppContextProvider, useWalletContext } from '@stores';
+import { AppContextProvider } from '@stores';
 import { ClusterSwitcher, WalletConnector } from '@components';
 
 const AppHeader = () => {
-  const { connected } = useWalletContext();
   return (
     <header className="w-screen h-24 py-5 px-8 flex items-center gap-4 justify-between">
       <nav>
@@ -13,7 +12,7 @@ const AppHeader = () => {
       </nav>
       <aside className="flex items-center gap-6">
         <WalletConnector />
-        {connected && <ClusterSwitcher />}
+        <ClusterSwitcher />
       </aside>
     </header>
   );
