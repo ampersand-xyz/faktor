@@ -1,7 +1,4 @@
 import { Connection } from '@solana/web3.js';
-import fs from 'mz/fs';
-import yaml from 'yaml';
-import { CONFIG_FILE_PATH } from './constants';
 
 let connection: Connection;
 let cluster: string;
@@ -20,9 +17,4 @@ export async function connectToCluster(clusterUrl: string): Promise<Connection> 
     }
   }
   return connection;
-}
-
-export async function getConfig(): Promise<any> {
-  const configYml = await fs.readFile(CONFIG_FILE_PATH, { encoding: 'utf8' });
-  return yaml.parse(configYml);
 }
