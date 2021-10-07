@@ -15,142 +15,148 @@ declare_id!("8BHW97BHkSKUHjTxHd6g7eGRfLxQfmXniEMcAskxQTKi");
 #[program]
 pub mod faktor {
     use super::*;
-    pub fn issue_invoice(ctx: Context<IssueInvoice>, amount: u64, memo: String) -> ProgramResult {
+    pub fn open(ctx: Context<Open>, balance: u64, memo: String) -> ProgramResult {
+        // Parse accounts from context
+        let issuer = &ctx.accounts.issuer;
+        let debtor = &ctx.accounts.debtor;
         let invoice = &mut ctx.accounts.invoice;
-        invoice.initial_debt = amount;
-        invoice.paid_debt = 0;
-        invoice.remaining_debt = amount;
-        invoice.issuer = *ctx.accounts.issuer.key;
-        invoice.debtor = *ctx.accounts.debtor.key;
-        invoice.collector = *ctx.accounts.collector.key;
-        invoice.memo = memo; // TODO: Max size limit on memo length?
+        let system_program = &ctx.accounts.system_program;
+        // Open invoice
         invoice.status = InvoiceStatus::Open;
+        invoice.issuer = issuer.key();
+        invoice.collateral = balance;
+        invoice.debtor = debtor.key();
+        invoice.debt = balance;
+        // TODO: Max size limit on memo length?
+        invoice.memo = memo;
+        // Transfer SOL from issuer to invoice as collateral
+        if issuer.lamports() < balance {
+            return Err(ErrorCode::NotEnoughSOL.into());
+        }
+        invoke(
+            &system_instruction::transfer(&issuer.key(), &invoice.key(), balance),
+            &[
+                issuer.to_account_info().clone(),
+                invoice.to_account_info().clone(),
+                system_program.to_account_info().clone(),
+            ],
+        )?;
         return Ok(());
     }
 
-    pub fn pay_invoice(ctx: Context<PayInvoice>, amount: u64) -> ProgramResult {
-        // Validate the invoice is open
+    pub fn pay(ctx: Context<Pay>, amount: u64) -> ProgramResult {
+        // Parse accounts from context
         let invoice = &mut ctx.accounts.invoice;
+        let debtor = &mut ctx.accounts.debtor;
+        let system_program = &ctx.accounts.system_program;
+        // Only continue if the invoice is open
         if invoice.status != InvoiceStatus::Open {
             return Err(ErrorCode::InvoiceNotOpen.into());
         }
-        let amount = min(amount, invoice.remaining_debt);
-        // Verify debtor has enough SOL to pay the amount
-        if ctx.accounts.debtor.lamports() < amount {
+        // Transfer SOL from the debtor to the invoice
+        let amount = min(amount, invoice.debt);
+        if debtor.lamports() < amount {
             return Err(ErrorCode::NotEnoughSOL.into());
         }
-        // Transfer SOL from the payer to the issuer
         invoke(
-            &system_instruction::transfer(
-                ctx.accounts.debtor.key,
-                ctx.accounts.collector.key,
-                amount,
-            ),
+            &system_instruction::transfer(&debtor.key(), &invoice.key(), amount),
             &[
-                ctx.accounts.debtor.to_account_info().clone(),
-                ctx.accounts.collector.to_account_info().clone(),
-                ctx.accounts.system_program.to_account_info().clone(),
+                debtor.to_account_info().clone(),
+                invoice.to_account_info().clone(),
+                system_program.to_account_info().clone(),
             ],
         )?;
-        // Update the invoice's debt balances
-        invoice.remaining_debt = invoice.remaining_debt - amount;
-        invoice.paid_debt = invoice.paid_debt + amount;
-        // If there's no remaining debt, mark the invoice as pid
-        if invoice.remaining_debt <= 0 {
+        // Update collateral and debt balances
+        invoice.collateral = invoice.collateral + amount;
+        invoice.debt = invoice.debt - amount;
+        // Update invoice status
+        if invoice.debt <= 0 {
             invoice.status = InvoiceStatus::Paid;
         }
         return Ok(());
     }
 
-    pub fn reject_invoice(ctx: Context<RejectInvoice>, is_spam: bool) -> ProgramResult {
-        // Validate the invoice is open
-        let invoice = &mut ctx.accounts.invoice;
-        if invoice.status != InvoiceStatus::Open {
-            return Err(ErrorCode::InvoiceNotOpen.into());
-        }
-        // Reject the invoice and optionally flag as spam
-        invoice.remaining_debt = 0;
-        if is_spam {
-            invoice.status = InvoiceStatus::Spam;
-        } else {
-            invoice.status = InvoiceStatus::Rejected;
-        }
-        return Ok(());
-    }
+    // pub fn reject_invoice(ctx: Context<RejectInvoice>, is_spam: bool) -> ProgramResult {
+    //     // Validate the invoice is open
+    //     let invoice = &mut ctx.accounts.invoice;
+    //     if invoice.status != InvoiceStatus::Open {
+    //         return Err(ErrorCode::InvoiceNotOpen.into());
+    //     }
+    //     // Reject the invoice and optionally flag as spam
+    //     invoice.remaining_debt = 0;
+    //     if is_spam {
+    //         invoice.status = InvoiceStatus::Spam;
+    //     } else {
+    //         invoice.status = InvoiceStatus::Rejected;
+    //     }
+    //     return Ok(());
+    // }
 
-    pub fn void_invoice(ctx: Context<VoidInvoice>) -> ProgramResult {
-        // Validate the invoice is open
-        let invoice = &mut ctx.accounts.invoice;
-        if invoice.status != InvoiceStatus::Open {
-            return Err(ErrorCode::InvoiceNotOpen.into());
-        }
-        // Void the invoice's remaining debt
-        invoice.remaining_debt = 0;
-        invoice.status = InvoiceStatus::Void;
-        return Ok(());
-    }
+    // pub fn void_invoice(ctx: Context<VoidInvoice>) -> ProgramResult {
+    //     // Validate the invoice is open
+    //     let invoice = &mut ctx.accounts.invoice;
+    //     if invoice.status != InvoiceStatus::Open {
+    //         return Err(ErrorCode::InvoiceNotOpen.into());
+    //     }
+    //     // Void the invoice's remaining debt
+    //     invoice.remaining_debt = 0;
+    //     invoice.status = InvoiceStatus::Void;
+    //     return Ok(());
+    // }
 }
 
 #[derive(Accounts)]
 #[instruction(amount: u64, memo: String)]
-pub struct IssueInvoice<'info> {
-    #[account(init, payer = issuer, space = 8 + 32 + 32 + 32 + 8 + 8 + 8 + 4 + memo.len() + 4)]
+pub struct Open<'info> {
+    #[account(init, payer = issuer, space = 8 + 4 + 32 + 8 + 32 + 8 + 4 + memo.len())]
     pub invoice: Account<'info, Invoice>,
     #[account(mut)]
     pub issuer: Signer<'info>,
     pub debtor: AccountInfo<'info>,
-    pub collector: AccountInfo<'info>,
     #[account(address = system_program::ID)]
     pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
-pub struct PayInvoice<'info> {
-    #[account(mut, has_one = collector, has_one = debtor)]
-    pub invoice: Account<'info, Invoice>,
-    #[account(mut)]
-    pub collector: AccountInfo<'info>,
-    #[account(mut)]
-    pub debtor: Signer<'info>,
-    #[account(address = system_program::ID)]
-    pub system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
-pub struct RejectInvoice<'info> {
+pub struct Pay<'info> {
     #[account(mut, has_one = debtor)]
     pub invoice: Account<'info, Invoice>,
     #[account(mut)]
     pub debtor: Signer<'info>,
+    #[account(address = system_program::ID)]
+    pub system_program: Program<'info, System>,
 }
 
-#[derive(Accounts)]
-pub struct VoidInvoice<'info> {
-    #[account(mut, has_one = issuer)]
-    pub invoice: Account<'info, Invoice>,
-    #[account(mut)]
-    pub issuer: Signer<'info>,
-}
+// #[derive(Accounts)]
+// pub struct RejectInvoice<'info> {
+//     #[account(mut, has_one = payer)]
+//     pub invoice: Account<'info, Invoice>,
+//     #[account(mut)]
+//     pub payer: Signer<'info>,
+// }
+
+// #[derive(Accounts)]
+// pub struct VoidInvoice<'info> {
+//     #[account(mut, has_one = opener)]
+//     pub invoice: Account<'info, Invoice>,
+//     #[account(mut)]
+//     pub opener: Signer<'info>,
+// }
 
 #[account]
 pub struct Invoice {
-    pub issuer: Pubkey,
-    pub debtor: Pubkey,
-    pub collector: Pubkey,
-    pub initial_debt: u64,
-    pub paid_debt: u64,
-    pub remaining_debt: u64,
-    pub memo: String,
     pub status: InvoiceStatus,
+    pub issuer: Pubkey,
+    pub collateral: u64,
+    pub debtor: Pubkey,
+    pub debt: u64,
+    pub memo: String,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
 pub enum InvoiceStatus {
     Open,
     Paid,
-    Rejected,
-    Spam,
-    Void,
 }
 
 #[error]
