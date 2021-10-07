@@ -21,7 +21,7 @@ export const Routes = () => {
     <Switch>
       <Route exact path="/" component={() => <Home />} />
       {anchorWallet && (
-        <Route exact path="/invoices" component={() => <Invoices wallet={anchorWallet} />} />
+        <Route exact path="/" component={() => <Invoices wallet={anchorWallet} />} />
       )}
     </Switch>
   );
