@@ -18,3 +18,21 @@ export async function connectToCluster(clusterUrl: string): Promise<Connection> 
   }
   return connection;
 }
+
+const clusterTestQueue: string[] = [];
+
+export const verifyCluster = async (
+  clusterUrl: string,
+  onValid: () => void,
+  onInvalid: () => void
+): Promise<void> => {
+  try {
+    clusterTestQueue.push(clusterUrl);
+    await connectToCluster(clusterUrl);
+    clusterTestQueue.splice(0, 1);
+    onValid();
+  } catch (err) {
+    clusterTestQueue.splice(0, 1);
+    onInvalid();
+  }
+};
