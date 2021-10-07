@@ -13,7 +13,7 @@
       "@layouts": ["./ui/layouts"],
       "@components/*": ["./ui/components/*"],
       "@components": ["./ui/components"],
-      "@hooks": ["./ui/hooks"]
+      "@ui/*": ["./ui/*"]
     }
   }
 }

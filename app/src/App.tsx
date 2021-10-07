@@ -2,7 +2,7 @@ import { Routes } from './routes';
 import { ReactNode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { AppContextProvider } from '@stores';
-import { WalletConnector } from '@components';
+import { ClusterSwitcher, WalletConnector } from '@components';
 
 const AppLayout = ({ children }: { children: ReactNode }) => {
   return (
@@ -13,6 +13,7 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
             <a href="/">Faktor</a>
           </nav>
           <WalletConnector />
+          <ClusterSwitcher />
         </header>
         {children}
       </div>
