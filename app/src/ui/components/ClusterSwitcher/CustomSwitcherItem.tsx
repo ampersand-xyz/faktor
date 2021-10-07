@@ -1,5 +1,5 @@
 import { ClusterID, connectToCluster, ICluster } from '@core';
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { SwitcherItem } from './SwitcherItem';
 
 interface CustomSwitcherItemProps {
@@ -12,6 +12,24 @@ export const CustomSwitcherItem = ({ cluster, onSelect, isSelected }: CustomSwit
   const [verifying, setVerifying] = useState<boolean>(false);
   const [inputValue, onChange] = useState<string | undefined>(cluster?.url);
   const [error, setError] = useState<string | null>(null);
+
+  const { current: clusterTestQueue } = useRef<string[]>([]);
+
+  const verifyCluster = async (
+    clusterUrl: string,
+    onValid: () => void,
+    onInvalid: () => void
+  ): Promise<void> => {
+    try {
+      clusterTestQueue.push(clusterUrl);
+      await connectToCluster(clusterUrl);
+      clusterTestQueue.splice(0, 1);
+      onValid();
+    } catch (err) {
+      clusterTestQueue.splice(0, 1);
+      onInvalid();
+    }
+  };
 
   const runClusterVerification = async (clusterUrl: string): Promise<boolean> => {
     let result = false;
@@ -68,20 +86,3 @@ export const CustomSwitcherItem = ({ cluster, onSelect, isSelected }: CustomSwit
     </SwitcherItem>
   );
 };
-
-const clusterTestQueue: string[] = [];
-async function verifyCluster(
-  clusterUrl: string,
-  onValid: () => void,
-  onInvalid: () => void
-): Promise<void> {
-  try {
-    clusterTestQueue.push(clusterUrl);
-    await connectToCluster(clusterUrl);
-    clusterTestQueue.splice(0, 1);
-    onValid();
-  } catch (err) {
-    clusterTestQueue.splice(0, 1);
-    onInvalid();
-  }
-}
