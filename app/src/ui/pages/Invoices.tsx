@@ -121,7 +121,9 @@ export const Invoices = ({ wallet }: { wallet: Wallet }) => {
                       {invoices && invoices.length > 1 ? (
                         <tbody className="bg-white divide-y divide-gray-200">
                           {invoices.map((invoice, i) => {
-                            const status = Object.keys(invoice.account.status)[0];
+                            const status = Object.keys(
+                              invoice.account.status
+                            )[0] as keyof typeof statusStyles;
 
                             const pubKey = invoice.publicKey.toString();
 
