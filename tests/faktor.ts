@@ -1,6 +1,6 @@
 const assert = require("assert");
-const anchor = require("@project-serum/anchor");
-const solana = require("@solana/web3.js");
+import anchor from '@project-serum/anchor'
+import solana from '@solana/web3.js'
 
 const { LAMPORTS_PER_SOL } = solana;
 const { BN, Provider } = anchor;
@@ -22,7 +22,7 @@ describe("faktor", () => {
    * @param {number} amount The invoice amount
    * @param {PublicKey} collector An optional address to collect payments at
    */
-  async function issueInvoice(amount) {
+  async function issueInvoice(amount: number, collector: solana.PublicKey) {
     const invoice = Keypair.generate();
     const bnAmount = new BN(amount);
     const memo = `Please pay me!`;
@@ -31,7 +31,7 @@ describe("faktor", () => {
         invoice: invoice.publicKey,
         issuer: alice.publicKey,
         debtor: bob.publicKey,
-        collector: charlie.publicKey,
+        collector,
         systemProgram: SystemProgram.programId,
       },
       signers: [invoice, alice],
@@ -72,7 +72,7 @@ describe("faktor", () => {
 
   it("Issues an invoice", async () => {
     const initialBalances = await getBalances();
-    const invoicePubkey = await issueInvoice(1234);
+    const invoicePubkey = await issueInvoice(1234, charlie.publicKey);
 
     // Validation
     const invoice = await program.account.invoice.fetch(invoicePubkey);

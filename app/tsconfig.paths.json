@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "baseUrl": "src",
+    "paths": {
+      "@utils": ["./utils"],
+      "@core": ["./core"],
+      "@stores": ["./stores"],
+      "@wallets/*": ["./wallets/*"],
+      "@atoms": ["./ui/atoms"],
+      "@contexts": ["./ui/contexts"],
+      "@styles": ["./ui/styles"],
+      "@pages": ["./ui/pages"],
+      "@layouts": ["./ui/layouts"],
+      "@components/*": ["./ui/components/*"],
+      "@components": ["./ui/components"],
+      "@ui/*": ["./ui/*"]
+    }
+  }
+}

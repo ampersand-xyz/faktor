@@ -1,44 +1,44 @@
-import { getPhantomWallet } from "@solana/wallet-adapter-wallets";
-import {
-  WalletProvider,
-  ConnectionProvider,
-} from "@solana/wallet-adapter-react";
-import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
-import { Routes } from "./routes";
-import { ReactNode } from "react";
+import { Routes } from './routes';
+import { ReactNode } from 'react';
+import { BrowserRouter } from 'react-router-dom';
+import { ConnectionProvider, WalletProvider } from '@stores';
+import { ClusterSwitcher, WalletConnector } from '@components';
 
-const wallets = [
-  // view list of available wallets at https://github.com/solana-labs/wallet-adapter#wallets
-  getPhantomWallet(),
-];
+const AppHeader = () => {
+  return (
+    <header className="w-screen h-24 py-5 px-8 flex items-center gap-4 justify-between">
+      <nav>
+        <a href="/">Faktor</a>
+      </nav>
+      <aside className="flex items-center gap-6">
+        <WalletConnector />
+        <ClusterSwitcher />
+      </aside>
+    </header>
+  );
+};
 
 const AppLayout = ({ children }: { children: ReactNode }) => {
   return (
     <main>
-      <body className="w-screen h-screen">
-        <header className="flex items-center w-screen h-24 gap-4 px-8 py-5">
-          <a href="/#">HOME</a>
-          <a href="/#/new">NEW</a>
-          <a href="/#/sent">SENT</a>
-          <a href="/#/received">RECEIVED</a>
-          <a href="/#/invoices">INVOICES</a>
-        </header>
+      <div className="h-screen w-screen relative z-0">
+        <AppHeader />
         {children}
-      </body>
+      </div>
     </main>
   );
 };
 
 export default function AppWithProviders() {
   return (
-    <ConnectionProvider endpoint="http://127.0.0.1:8899">
-      <WalletProvider wallets={wallets} autoConnect>
-        <WalletModalProvider>
+    <BrowserRouter>
+      <WalletProvider>
+        <ConnectionProvider>
           <AppLayout>
             <Routes />
           </AppLayout>
-        </WalletModalProvider>
+        </ConnectionProvider>
       </WalletProvider>
-    </ConnectionProvider>
+    </BrowserRouter>
   );
 }

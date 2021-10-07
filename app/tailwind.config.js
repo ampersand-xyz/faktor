@@ -1,5 +1,5 @@
 module.exports = {
-  purge: ["./src/**/*.{js,jsx,ts,tsx}", "./public/index.html"],
+  purge: ['./src/ui/*.{js,jsx,ts,tsx}', './public/index.html'],
   darkMode: false, // or 'media' or 'class'
   theme: {
     extend: {
@@ -12,10 +12,12 @@ module.exports = {
           900: '#1F1F1F'
         }
       }
-    },
+    }
   },
   variants: {
-    extend: {},
+    extend: {
+      textColor: ['hover', 'disabled']
+    }
   },
-  plugins: [],
+  plugins: []
 };

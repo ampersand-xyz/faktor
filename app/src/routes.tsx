@@ -1,22 +1,28 @@
-import { HashRouter, Switch, Route } from "react-router-dom";
-import {
-  HomeView,
-  NewView,
-  SentView,
-  ReceivedView,
-  InvoicesView,
-} from "./views";
+import { Home, Invoices } from '@pages';
+import { Wallet } from '@project-serum/anchor';
+import { useWallet } from '@stores';
+import { useMemo } from 'react';
+import { Switch, Route } from 'react-router-dom';
 
 export const Routes = () => {
+  const { wallet, walletPublicKey } = useWallet();
+
+  const anchorWallet = useMemo(() => {
+    return wallet
+      ? ({
+          publicKey: walletPublicKey,
+          signTransaction: wallet.signTransaction,
+          signAllTransactions: wallet.signAllTransactions
+        } as Wallet)
+      : null;
+  }, [wallet]);
+
   return (
-    <HashRouter basename={"/"}>
-      <Switch>
-        <Route exact path="/" component={() => <HomeView />} />
-        <Route exact path="/new" component={() => <NewView />} />
-        <Route exact path="/sent" component={() => <SentView />} />
-        <Route exact path="/received" component={() => <ReceivedView />} />
-        <Route exact path="/invoices" component={() => <InvoicesView />} />
-      </Switch>
-    </HashRouter>
+    <Switch>
+      <Route exact path="/" component={() => <Home />} />
+      {anchorWallet && (
+        <Route exact path="/" component={() => <Invoices wallet={anchorWallet} />} />
+      )}
+    </Switch>
   );
 };
