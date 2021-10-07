@@ -1,6 +1,7 @@
 import { CashIcon } from '@heroicons/react/solid';
-import { BN, Program, Provider, Wallet, web3 } from '@project-serum/anchor';
+import { BN, Program, Provider, web3 } from '@project-serum/anchor';
 import { Connection, PublicKey } from '@solana/web3.js';
+import { useConnectedApp } from '@stores';
 import { useEffect, useState } from 'react';
 import idl from '../../idl.json';
 
@@ -27,7 +28,8 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
 
-export const Invoices = ({ wallet }: { wallet: Wallet }) => {
+export const Invoices = () => {
+  const { wallet } = useConnectedApp();
   const [invoices, setInvoices] = useState<any[]>([]);
 
   async function getProvider() {
