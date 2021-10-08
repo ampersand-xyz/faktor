@@ -1,9 +1,9 @@
-import { getIdl } from '../idl';
 import { createAnchorProvider } from '../utils';
-import { Program, BN, Wallet } from '@project-serum/anchor';
+import { Program, BN, Wallet, parseIdlErrors, ProgramError } from '@project-serum/anchor';
 import { Connection, Keypair, PublicKey, SystemProgram } from '@solana/web3.js';
 import { InvoiceData, Invoice } from './types';
 import { InvoiceStatus } from '@core';
+import { IDL } from '@core/idl';
 
 export const createInvoice = async (
   connection: Connection,
@@ -11,8 +11,7 @@ export const createInvoice = async (
   data: InvoiceData
 ): Promise<Invoice> => {
   const provider = createAnchorProvider(connection, { preflightCommitment: 'processed' }, wallet);
-  const idl = getIdl();
-  const program = new Program(idl, idl.metadata.address, provider);
+  const program = new Program(IDL, IDL.metadata.address, provider);
 
   const invoice = Keypair.generate();
   const bnAmount = new BN(data.amount);
@@ -43,8 +42,8 @@ export const createInvoice = async (
     };
   } catch (error) {
     console.log(`\n❌ Error: Failed to issue invoice:`, error, '\n');
-    throw new Error(
-      `Failed to issue invoice: ${error instanceof Error ? error.message : 'Unknown error type'}`
-    );
+    const programError = ProgramError.parse(error, parseIdlErrors(IDL));
+    if (programError) throw programError;
+    else throw error;
   }
 };

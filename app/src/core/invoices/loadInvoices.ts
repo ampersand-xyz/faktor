@@ -1,6 +1,6 @@
-import { getIdl } from '@core/idl';
+import { IDL } from '@core/idl';
 import { createAnchorProvider } from '@core/utils';
-import { Program, Wallet } from '@project-serum/anchor';
+import { parseIdlErrors, Program, ProgramError, Wallet } from '@project-serum/anchor';
 import { Connection } from '@solana/web3.js';
 import { InvoicesStore } from './types';
 
@@ -14,12 +14,17 @@ export const loadInvoices = async (
     { preflightCommitment: 'processed' },
     wallet
   );
-  const idl = getIdl();
-  const program = new Program(idl, idl.metadata.address, provider);
+  const program = new Program(IDL, IDL.metadata.address, provider);
 
-  const allInvoices = await program.account.invoice.all();
-  const issuedInvoices = allInvoices.map(({ publicKey, account }) => ({ publicKey, ...account }));
-  console.log('got invoices:\n\n', allInvoices);
-  const store: InvoicesStore = { received: [], issued: issuedInvoices };
-  return store;
+  try {
+    const allInvoices = await program.account.invoice.all();
+    const issuedInvoices = allInvoices.map(({ publicKey, account }) => ({ publicKey, ...account }));
+    console.log('got invoices:\n\n', allInvoices);
+    const store: InvoicesStore = { received: [], issued: issuedInvoices };
+    return store;
+  } catch (error) {
+    const programError = ProgramError.parse(error, parseIdlErrors(IDL));
+    if (programError) throw programError;
+    else throw error;
+  }
 };
