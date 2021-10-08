@@ -83,7 +83,7 @@ export const Invoices = () => {
                                 <td className="px-6 py-4 text-sm text-right text-gray-500 whitespace-nowrap">
                                   <div className="flex space-x-2">
                                     <span className="font-medium text-gray-900">
-                                      {invoice.account.remainingDebt.words[0]}
+                                      {invoice.account.remainingDebt.toString()}
                                     </span>
                                     <div className="flex items-center">
                                       SOL

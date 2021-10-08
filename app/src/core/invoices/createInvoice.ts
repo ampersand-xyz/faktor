@@ -2,7 +2,6 @@ import { createAnchorProvider } from '../utils';
 import { Program, BN, Wallet, parseIdlErrors, ProgramError } from '@project-serum/anchor';
 import { Connection, Keypair, PublicKey, SystemProgram } from '@solana/web3.js';
 import { InvoiceData, Invoice } from './types';
-import { InvoiceStatus } from '@core';
 import { IDL } from '@core/idl';
 
 export const createInvoice = async (
@@ -14,18 +13,20 @@ export const createInvoice = async (
   const program = new Program(IDL, IDL.metadata.address, provider);
 
   const invoice = Keypair.generate();
+  const charlie = Keypair.generate();
   const bnAmount = new BN(data.amount);
   const debtorPublicKey = new PublicKey(data.debtor);
 
   try {
     await program.rpc.issueInvoice(bnAmount, data.memo, {
       accounts: {
+        collector: charlie.publicKey,
+        debtor: debtorPublicKey,
         invoice: invoice.publicKey,
         issuer: provider.wallet.publicKey,
-        debtor: debtorPublicKey,
         systemProgram: SystemProgram.programId
       },
-      signers: [invoice]
+      signers: [invoice, wallet]
     });
 
     const issuedInvoice = await program.account.invoice.fetch(invoice.publicKey);
@@ -33,11 +34,15 @@ export const createInvoice = async (
     return {
       publicKey: issuedInvoice.publicKey,
       account: {
-        status: InvoiceStatus.Open,
-        debtor: debtorPublicKey,
         amount: data.amount,
+        collector: issuedInvoice.collector,
+        debtor: debtorPublicKey,
+        initialDebt: issuedInvoice.initialDebt,
+        issuer: issuedInvoice.issuer,
         memo: data.memo,
-        remainingDebt: { words: [] as string[] }
+        paidDebt: issuedInvoice.paidDebt,
+        remainingDebt: issuedInvoice.remainingDebt,
+        status: issuedInvoice.status
       }
     };
   } catch (error) {

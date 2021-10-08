@@ -17,13 +17,15 @@ export interface InvoiceData {
 }
 
 export interface InvoiceAccount {
-  debtor: PublicKey;
   amount: number;
-  status: InvoiceStatus;
+  collector: PublicKey;
+  debtor: PublicKey;
+  initialDebt: number;
+  issuer: PublicKey;
   memo: string;
-  remainingDebt: {
-    words: string[];
-  };
+  paidDebt: number;
+  remainingDebt: number;
+  status: InvoiceStatus;
 }
 
 export interface Invoice {
