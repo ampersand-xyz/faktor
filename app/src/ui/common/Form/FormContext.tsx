@@ -1,11 +1,18 @@
-import React, { createContext, RefObject, useCallback, useContext, useState } from 'react';
-import { FormFieldProps } from './FormField';
+import React, {
+  createContext,
+  RefObject,
+  SetStateAction,
+  useCallback,
+  useContext,
+  useState
+} from 'react';
 
 export interface IFormContext {
   formRef: React.MutableRefObject<HTMLFormElement | null>;
-  fields: FormFieldProps[];
   fieldValues: Record<string, string>;
   setFieldValue: (id: string, value: string) => void;
+  wasSubmitted: boolean;
+  setWasSubmitted: React.Dispatch<SetStateAction<boolean>>;
 }
 
 export const FormContext = createContext<IFormContext | undefined>(undefined);
@@ -17,7 +24,6 @@ export const useFormContext = () => {
 };
 
 export interface FormProviderProps {
-  fields: FormFieldProps[];
   initialValues: Record<string, string>;
   formRef: RefObject<HTMLFormElement | null>;
 }
@@ -25,12 +31,11 @@ export interface FormProviderProps {
 export const FormProvider: React.FC<FormProviderProps> = ({
   children,
   initialValues,
-  formRef: initialFormRef,
-  fields: initialFields
+  formRef: initialFormRef
 }) => {
   const [formRef] = useState<React.RefObject<HTMLFormElement | null>>(initialFormRef);
-  const [fields] = useState<FormFieldProps[]>(initialFields);
   const [fieldValues, setFieldValues] = useState<Record<string, string>>(initialValues);
+  const [wasSubmitted, setWasSubmitted] = useState(false);
 
   const setFieldValue = useCallback(
     (id: string, value: string) => {
@@ -40,7 +45,9 @@ export const FormProvider: React.FC<FormProviderProps> = ({
   );
 
   return (
-    <FormContext.Provider value={{ formRef, fields, fieldValues, setFieldValue }}>
+    <FormContext.Provider
+      value={{ formRef, fieldValues, setFieldValue, wasSubmitted, setWasSubmitted }}
+    >
       {children}
     </FormContext.Provider>
   );

@@ -1,17 +1,21 @@
 import { Modal } from '@ui/common';
+import { InvoiceData } from '@core/invoices/types';
 import { useState } from 'react';
 import { AmountAndRecipientStep } from './AmountAndRecipientStep';
 import { ConfirmSendInvoiceStep } from './ConfirmSendInvoiceStep';
-import { InvoiceData } from './shared';
+import { PrimaryAction } from '@ui/common';
+import { useConnectedApp } from '@stores';
 
 export enum SendInvoiceSteps {
   ChooseRecipientAndAmount = 0,
   ConfirmSend = 1
 }
 
-const initialData = { recipient: '', amount: -1 };
+const initialData = { debtor: '', amount: -1, memo: '' };
 
 export const SendInvoice = () => {
+  const { invoicesManager } = useConnectedApp();
+
   const [modalOpen, setModalOpen] = useState(false);
   const [data, setData] = useState<InvoiceData>(initialData);
   const [step, setStep] = useState(SendInvoiceSteps.ChooseRecipientAndAmount);
@@ -26,19 +30,18 @@ export const SendInvoice = () => {
     setModalOpen(true);
   };
 
-  const confirmSendInvoice = () => {
+  const confirmSendInvoice = async () => {
     console.log('Confirmed invoice to send: ', JSON.stringify(data));
+    await invoicesManager?.createInvoice(data).catch((error) => {
+      console.warn('UNHANDLED ERROR -- TODO');
+    });
+    closeModal();
   };
 
   return (
     <>
-      <button
-        onClick={openModal}
-        className="flex items-center justify-center px-4 font-semibold h-11 bg-blue-500 hover:bg-blue-700 rounded-lg"
-      >
-        Send Invoice
-      </button>
-      <Modal className="bg-gray-800 bg-opacity-90 max-w-sm" open={modalOpen} onClose={closeModal}>
+      <PrimaryAction onClick={openModal}>Send Invoice</PrimaryAction>
+      <Modal open={modalOpen} onClose={closeModal}>
         {step === SendInvoiceSteps.ChooseRecipientAndAmount ? (
           <AmountAndRecipientStep
             initialData={data}

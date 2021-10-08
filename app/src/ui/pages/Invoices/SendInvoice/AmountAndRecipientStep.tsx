@@ -1,13 +1,22 @@
-import { Form, FormField, FormFieldProps } from '@ui/common';
+import { SOL_PRECISION_STEP } from '@core/constants';
+import { InvoiceData } from '@core/invoices/types';
+import { Card, Form, FormFieldProps, List } from '@ui/common';
 import { useMemo } from 'react';
-import { InvoiceData } from './shared';
+import { PrimaryAction, SecondaryAction } from '@ui/common';
 
 const inputFields: FormFieldProps[] = [
   {
-    id: 'recipient',
+    id: 'debtor',
     placeholder: "Recipient's SOL address"
   },
-  { id: 'amount', placeholder: 'Amount (SOL)', type: 'number' }
+  {
+    id: 'amount',
+    placeholder: 'Amount (SOL)',
+    type: 'number',
+    step: SOL_PRECISION_STEP,
+    min: SOL_PRECISION_STEP
+  },
+  { id: 'memo', placeholder: "What's this for?" }
 ];
 
 export interface AmountAndRecipientStepProps {
@@ -24,56 +33,46 @@ export const AmountAndRecipientStep: React.FC<AmountAndRecipientStepProps> = ({
   const initialValues = useMemo(
     () => ({
       ...initialData,
-      amount: initialData.amount > 0 ? initialData.amount.toString() : ''
+      amount: initialData.amount > 0 ? initialData.amount.toPrecision() : ''
     }),
     [initialData]
   );
 
   const handleSubmit = (fieldValues: Record<string, string>) => {
     const data: InvoiceData = {
-      recipient: fieldValues['recipient'],
-      amount: parseInt(fieldValues['amount'])
+      debtor: fieldValues['debtor'],
+      amount: parseFloat(fieldValues['amount']),
+      memo: fieldValues['memo']
     };
     onConfirm(data);
   };
 
   return (
-    <Form
-      initialValues={initialValues}
-      fields={inputFields}
-      onSubmit={handleSubmit}
-      className="flex flex-col z-10 relative mx-0 my-auto overflow-x-hidden overflow-y-auto max-h-full px-4 py-5 w-full list-none"
-    >
-      <Form.Title>Send Invoice</Form.Title>
-      <Form.Fields className="mt-10">
-        {inputFields.map((props) => (
-          <li key={props.id}>
-            <FormField
-              {...props}
-              inputClassName="h-12 text-lg w-full text-white placeholder-white placeholder-opacity-40 bg-gray-800 rounded-md border border-gray-700 px-3 py-2"
-            />
-          </li>
-        ))}
-      </Form.Fields>
-      <Form.Actions>
-        {({ submitDisabled }) => (
-          <div className="flex items-center gap-3 mt-12">
-            <button
-              onClick={onCancel}
-              className="h-12 flex items-center justify-center w-1/2 bg-gray-700 rounded-lg font-bold text-lg"
-            >
+    <Form initialValues={initialValues} onSubmit={handleSubmit}>
+      {({ submitDisabled }) => (
+        <Card className="shadow-lg bg-gray-800 h-[28rem]">
+          <Card.Header>
+            <h2>Send Invoice</h2>
+          </Card.Header>
+          <Card.Body>
+            <List>
+              {inputFields.map((props) => (
+                <li key={props.id}>
+                  <Form.Field {...props} />
+                </li>
+              ))}
+            </List>
+          </Card.Body>
+          <Card.Footer>
+            <SecondaryAction className="w-1/2" onClick={onCancel}>
               Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitDisabled}
-              className="h-12 flex items-center justify-center w-1/2 bg-indigo-600 rounded-lg font-bold text-lg disabled:bg-gray-700 text-white disabled:bg-opacity-80 disabled:text-opacity-50 disabled:cursor-default"
-            >
+            </SecondaryAction>
+            <PrimaryAction className="w-1/2" type="submit" disabled={submitDisabled}>
               Send
-            </button>
-          </div>
-        )}
-      </Form.Actions>
+            </PrimaryAction>
+          </Card.Footer>
+        </Card>
+      )}
     </Form>
   );
 };

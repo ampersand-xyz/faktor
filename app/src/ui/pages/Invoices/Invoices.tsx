@@ -31,62 +31,7 @@ function classNames(...classes: string[]) {
 }
 
 export const Invoices = () => {
-  const { wallet } = useConnectedApp();
-  const [invoices, setInvoices] = useState<any[]>([]);
-
-  async function getProvider() {
-    // Create the provider and return it to the caller
-    // Network set to local network for now
-    const network = 'http://127.0.0.1:8899';
-    const connection = new Connection(network, opts.preflightCommitment);
-    const provider = new Provider(connection, wallet, opts);
-    return provider;
-  }
-
-  async function issueInvoice(amount: any) {
-    const provider = await getProvider();
-    const program = new Program(idl as any, programID, provider);
-
-    const invoice = Keypair.generate();
-    const bnAmount = new BN(amount);
-    const memo = `Please pay me ${amount} SOL!`;
-
-    try {
-      // Interact with the program via RPC
-      await program.rpc.issueInvoice(bnAmount, memo, {
-        accounts: {
-          invoice: invoice.publicKey,
-          issuer: provider.wallet.publicKey,
-          debtor: bob.publicKey,
-          collector: charlie.publicKey,
-          systemProgram: SystemProgram.programId
-        },
-        signers: [invoice]
-      });
-
-      const issuedInvoice = await program.account.invoice.fetch(invoice.publicKey);
-      console.log(issuedInvoice);
-      return issuedInvoice;
-    } catch (err) {
-      console.log('Error Issuing Invoice: ', err);
-    }
-  }
-
-  async function getInvoices() {
-    const provider = await getProvider();
-    const program = new Program(idl as any, programID, provider);
-    const allInvoices: any = await program.account.invoice.all();
-    setInvoices(allInvoices);
-  }
-
-  useEffect(() => {
-    // create arbitrary invoice(s)
-    // async function createNewInvoice() {
-    //   await issueInvoice(20);
-    // }
-    // createNewInvoice();
-    getInvoices();
-  }, []);
+  const { wallet, invoicesManager } = useConnectedApp();
 
   return (
     <div className="relative flex h-screen overflow-hidden bg-gray-100">
@@ -120,9 +65,9 @@ export const Invoices = () => {
                           </th>
                         </tr>
                       </thead>
-                      {invoices && invoices.length > 1 ? (
+                      {invoicesManager.store.issued.length > 1 ? (
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {invoices.map((invoice, i) => {
+                          {invoicesManager.store.issued.map((invoice, i) => {
                             const status = Object.keys(
                               invoice.account.status
                             )[0] as keyof typeof statusStyles;

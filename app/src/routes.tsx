@@ -1,6 +1,6 @@
 import { Home, Invoices } from '@pages';
 import { Wallet } from '@project-serum/anchor';
-import { useWallet, ConnectedAppContext } from '@stores';
+import { useWallet, ConnectedAppProvider } from '@stores';
 import { useMemo } from 'react';
 import { Switch, Route } from 'react-router-dom';
 
@@ -20,9 +20,9 @@ export const Routes = () => {
   return (
     <Switch>
       {connectedWallet ? (
-        <ConnectedAppContext.Provider value={{ wallet: connectedWallet, disconnectWallet }}>
+        <ConnectedAppProvider {...{ wallet: connectedWallet, disconnectWallet }}>
           <Route exact path="/" component={() => <Invoices />} />
-        </ConnectedAppContext.Provider>
+        </ConnectedAppProvider>
       ) : (
         <Route exact path="/" component={() => <Home />} />
       )}

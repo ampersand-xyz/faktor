@@ -34,3 +34,7 @@ export const DEFAULT_CLUSTER = CLUSTERS[DEFAULT_CLUSTER_INDEX];
 
 export const CREATE_USER_PROGRAM = '';
 export const CREATE_INVOICE_PROGRAM = '';
+
+export const SOL_PRECISION_STEP = '0.000000001';
+
+export const SOLANA_LOGO_URL = 'https://cryptologos.cc/logos/solana-sol-logo.svg?v=010';

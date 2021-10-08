@@ -1,13 +1,12 @@
-import React, { ReactNode, useMemo, useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
+import { FormField } from './FormField';
 import { FormProvider, useFormContext } from './FormContext';
-import { FormFieldProps } from './FormField';
 import { getFieldError } from './getFieldError';
 
 export interface FormProps {
-  fields: FormFieldProps[];
   initialValues?: Record<string, string>;
   onSubmit: (values: Record<string, string>) => void;
-  children: ReactNode;
+  children: (props: { submitDisabled: boolean }) => JSX.Element;
   className?: string;
 }
 
@@ -15,69 +14,54 @@ export function Form({
   children,
   initialValues: _initialValues,
   onSubmit,
-  className = '',
-  fields
+  className = ''
 }: FormProps) {
   const formRef = useRef<HTMLFormElement | null>(null);
   const initialValues = useMemo(() => _initialValues ?? {}, [_initialValues]);
 
   return (
-    <FormProvider {...{ formRef, fields, initialValues }}>
-      <FormCore className={className} onSubmit={onSubmit}>
-        {children}
-      </FormCore>
+    <FormProvider {...{ formRef, initialValues }}>
+      <FormCore className={className} onSubmit={onSubmit} children={children} />
     </FormProvider>
   );
 }
 
-export const FormCore: React.FC<{
-  className: string;
-  onSubmit: (values: Record<string, string>) => void;
-}> = ({ children, className, onSubmit }) => {
-  const { formRef, fieldValues } = useFormContext();
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formIsValid = Object.entries(fieldValues).every(
-      ([fieldKey, fieldValue]) => !getFieldError(fieldKey, fieldValue)
-    );
-    if (formIsValid) {
-      onSubmit(fieldValues);
-    }
-  };
-
-  return (
-    <form ref={(ref) => (formRef.current = ref)} className={className} onSubmit={handleSubmit}>
-      {children}
-    </form>
-  );
-};
-
-Form.Title = function FormTitle({ children }: { children: ReactNode }) {
-  return <h2 className="font-semibold text-2xl">{children}</h2>;
-};
-
-Form.Fields = function FormFields({
+export const FormCore = ({
   children,
-  className = ''
+  className,
+  onSubmit
 }: {
-  children: ReactNode;
-  className?: string;
-}) {
-  return <ul className={`flex flex-col gap-3 flex-grow ${className} my-2`}>{children}</ul>;
-};
-
-Form.Actions = function FormActions({
-  children
-}: {
+  className: string;
   children: (props: { submitDisabled: boolean }) => JSX.Element;
-}) {
-  const { fieldValues } = useFormContext();
+  onSubmit: (values: Record<string, string>) => void;
+}) => {
+  const { formRef, fieldValues, setWasSubmitted } = useFormContext();
 
   const submitDisabled = useMemo(() => {
     const list = Object.entries(fieldValues);
     return list.length === 0 || list.some(([id, value]) => getFieldError(id, value));
   }, [fieldValues]);
 
-  return <div>{children({ submitDisabled })}</div>;
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formIsValid = Object.entries(fieldValues).every(
+      ([fieldKey, fieldValue]) => !getFieldError(fieldKey, fieldValue)
+    );
+    setWasSubmitted(true);
+    if (formIsValid) {
+      onSubmit(fieldValues);
+    }
+  };
+
+  return (
+    <form
+      ref={(ref) => (formRef.current = ref)}
+      className={`flex flex-col ${className}`}
+      onSubmit={handleSubmit}
+    >
+      {children({ submitDisabled })}
+    </form>
+  );
 };
+
+Form.Field = FormField;

@@ -1,17 +1,13 @@
 import { useOnClickOutside } from '@ui/hooks';
-import { useRef } from 'react';
+import { ReactNode, useRef } from 'react';
 interface ModalProps {
   open: boolean;
   onClose: () => void;
   className?: string;
+  children: ReactNode;
 }
 
-export const Modal: React.FC<ModalProps> = ({
-  children,
-  open,
-  onClose,
-  className = 'max-w-md'
-}) => {
+export const Modal = ({ children, open, onClose, className = '' }: ModalProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   useOnClickOutside(containerRef, onClose);
 
@@ -35,7 +31,7 @@ export const Container: React.FC<ContainerProps> = ({ children, onRef, className
   return (
     <div
       ref={onRef}
-      className={`relative justify-center flex items-center flex-col z-40 rounded-lg shadow-sm flex-1 ${className}`}
+      className={`relative justify-center flex items-center flex-col z-40 flex-1 ${className}`}
     >
       {children}
     </div>

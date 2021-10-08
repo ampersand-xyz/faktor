@@ -4,6 +4,7 @@
     "paths": {
       "@utils": ["./utils"],
       "@core": ["./core"],
+      "@core/*": ["./core/*"],
       "@stores": ["./stores"],
       "@wallets/*": ["./wallets/*"],
       "@atoms": ["./ui/atoms"],

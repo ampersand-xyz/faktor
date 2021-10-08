@@ -4,6 +4,7 @@
 
 :root {
   --color-gray-100: #EDEDED;
+  --color-gray-800: #292929;
   --color-gray-900: #1F1F1F;
 }
 
@@ -31,6 +32,34 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  cursor: default;
+}
+
 input {
   outline: none;
+}
+
+/* Change Autocomplete styles in Chrome*/
+input:-webkit-autofill,
+textarea:-webkit-autofill {
+  -webkit-text-fill-color: white;
+}
+
+/* Hide up and down buttons for number inputs */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+@layer base {
+  h2 {
+    @apply font-semibold text-2xl leading-6;
+  }
 }
