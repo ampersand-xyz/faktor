@@ -33,7 +33,7 @@ export const SendInvoice = () => {
   const confirmSendInvoice = async () => {
     console.log('Confirmed invoice to send: ', JSON.stringify(data));
     await invoicesManager?.createInvoice(data).catch((error) => {
-      console.warn('UNHANDLED ERROR -- TODO');
+      console.warn('Failed to issue invoice:', { error, data });
     });
     closeModal();
   };

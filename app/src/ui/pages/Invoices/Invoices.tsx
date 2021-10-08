@@ -1,22 +1,7 @@
 import { CashIcon } from '@heroicons/react/solid';
-import { BN, Program, Provider, web3 } from '@project-serum/anchor';
-import { Connection, PublicKey } from '@solana/web3.js';
 import { useConnectedApp } from '@stores';
-import { useEffect, useState } from 'react';
-import idl from '../../../idl.json';
 
 import { InvoicesHeader } from './InvoicesHeader';
-
-const { SystemProgram, Keypair } = web3;
-
-const programID = new PublicKey(idl.metadata.address);
-
-const bob = Keypair.generate();
-const charlie = Keypair.generate();
-
-const opts: web3.ConfirmOptions = {
-  preflightCommitment: 'processed'
-};
 
 const statusStyles = {
   open: 'bg-yellow-100 text-yellow-800',
@@ -31,7 +16,7 @@ function classNames(...classes: string[]) {
 }
 
 export const Invoices = () => {
-  const { wallet, invoicesManager } = useConnectedApp();
+  const { invoicesManager } = useConnectedApp();
 
   return (
     <div className="relative flex h-screen overflow-hidden bg-gray-100">

@@ -31,7 +31,7 @@ export class InvoicesManager {
   }
 
   async createInvoice(data: InvoiceData): Promise<Invoice> {
-    console.log('\n👋 Creating new invoice: ', data, '\n');
+    console.log('👋 Creating new invoice: ', data);
 
     const invoice = await createInvoice(this.connection, this.wallet, data);
     this.store.issued.push(invoice);

@@ -29,7 +29,7 @@ export const createInvoice = async (
     });
 
     const issuedInvoice = await program.account.invoice.fetch(invoice.publicKey);
-    console.log(`\n✅ Success: Issued invoice:`, issuedInvoice, '\n');
+    console.log(`✅ Success: Issued invoice:`, issuedInvoice);
     return {
       publicKey: issuedInvoice.publicKey,
       account: {
@@ -41,7 +41,6 @@ export const createInvoice = async (
       }
     };
   } catch (error) {
-    console.log(`\n❌ Error: Failed to issue invoice:`, error, '\n');
     const programError = ProgramError.parse(error, parseIdlErrors(IDL));
     if (programError) throw programError;
     else throw error;
