@@ -107,6 +107,4 @@ pub struct Escrow {
 pub enum ErrorCode {
     #[msg("Not enough SOL")]
     NotEnoughSOL,
-    #[msg("This invoice is not open")]
-    InvoiceNotOpen,
 }
