@@ -1,8 +1,8 @@
 const assert = require("assert");
-import anchor from '@project-serum/anchor'
-import solana from '@solana/web3.js'
+const anchor = require('@project-serum/anchor')
+const solana = require('@solana/web3.js')
 
-const { LAMPORTS_PER_SOL } = solana;
+const { LAMPORTS_PER_SOL, PublicKey } = solana;
 const { BN, Provider } = anchor;
 const { SystemProgram, Keypair } = anchor.web3;
 
@@ -22,7 +22,7 @@ describe("faktor", () => {
    * @param {number} amount The invoice amount
    * @param {PublicKey} collector An optional address to collect payments at
    */
-  async function issueInvoice(amount: number, collector: solana.PublicKey) {
+  async function issueInvoice(amount: number, collector: typeof PublicKey) {
     const invoice = Keypair.generate();
     const bnAmount = new BN(amount);
     const memo = `Please pay me!`;
