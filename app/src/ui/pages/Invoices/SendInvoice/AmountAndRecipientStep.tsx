@@ -10,10 +10,16 @@ const inputFields: FormFieldProps[] = [
 ];
 
 export interface AmountAndRecipientStepProps {
+  initialData: InvoiceData;
   onConfirm: (data: InvoiceData) => void;
+  onCancel: () => void;
 }
 
-export const AmountAndRecipientStep: React.FC<AmountAndRecipientStepProps> = ({ onConfirm }) => {
+export const AmountAndRecipientStep: React.FC<AmountAndRecipientStepProps> = ({
+  initialData,
+  onConfirm,
+  onCancel
+}) => {
   const handleSubmit = (fieldValues: Record<string, string>) => {
     const data: InvoiceData = {
       recipient: fieldValues['recipient'],
@@ -24,6 +30,10 @@ export const AmountAndRecipientStep: React.FC<AmountAndRecipientStepProps> = ({ 
 
   return (
     <Form
+      initialValues={{
+        ...initialData,
+        amount: initialData.amount > 0 ? initialData.amount.toString() : ''
+      }}
       fields={inputFields}
       onSubmit={handleSubmit}
       className="flex flex-col z-10 relative mx-0 my-auto overflow-x-hidden overflow-y-auto max-h-full px-4 py-5 w-full list-none"
@@ -43,7 +53,7 @@ export const AmountAndRecipientStep: React.FC<AmountAndRecipientStepProps> = ({ 
         {({ submitDisabled }) => (
           <div className="flex items-center gap-3 mt-12">
             <button
-              type="submit"
+              onClick={onCancel}
               className="h-12 flex items-center justify-center w-1/2 bg-gray-700 rounded-lg font-bold text-lg"
             >
               Cancel

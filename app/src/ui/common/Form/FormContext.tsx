@@ -18,24 +18,19 @@ export const useFormContext = () => {
 
 export interface FormProviderProps {
   fields: FormFieldProps[];
+  initialValues: Record<string, string>;
   formRef: RefObject<HTMLFormElement | null>;
 }
 
 export const FormProvider: React.FC<FormProviderProps> = ({
   children,
+  initialValues,
   formRef: initialFormRef,
   fields: initialFields
 }) => {
   const [formRef] = useState<React.RefObject<HTMLFormElement | null>>(initialFormRef);
   const [fields] = useState<FormFieldProps[]>(initialFields);
-  const [fieldValues, setFieldValues] = useState<Record<string, string>>(() => {
-    const result: Record<string, string> = {};
-    fields.forEach(({ id }) => {
-      result[id] = '';
-    });
-
-    return result;
-  });
+  const [fieldValues, setFieldValues] = useState<Record<string, string>>(initialValues);
 
   const setFieldValue = useCallback(
     (id: string, value: string) => {

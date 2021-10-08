@@ -1,20 +1,28 @@
 import React, { ReactNode, useMemo, useRef } from 'react';
 import { FormProvider, useFormContext } from './FormContext';
 import { FormFieldProps } from './FormField';
-import { getFieldError } from './utils';
+import { getFieldError } from './getFieldError';
 
 export interface FormProps {
   fields: FormFieldProps[];
+  initialValues?: Record<string, string>;
   onSubmit: (values: Record<string, string>) => void;
   children: ReactNode;
   className?: string;
 }
 
-export function Form({ children, onSubmit, className = '', fields }: FormProps) {
+export function Form({
+  children,
+  initialValues: _initialValues,
+  onSubmit,
+  className = '',
+  fields
+}: FormProps) {
   const formRef = useRef<HTMLFormElement | null>(null);
+  const initialValues = useMemo(() => _initialValues ?? {}, [_initialValues]);
 
   return (
-    <FormProvider {...{ formRef, fields }}>
+    <FormProvider {...{ formRef, fields, initialValues }}>
       <FormCore className={className} onSubmit={onSubmit}>
         {children}
       </FormCore>
