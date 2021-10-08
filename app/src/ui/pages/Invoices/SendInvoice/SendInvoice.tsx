@@ -1,37 +1,14 @@
-import { useOnClickOutside } from '@ui/hooks';
-import React, { useRef, useState } from 'react';
-interface ModalProps {
-  open: boolean;
-  onClose: () => void;
-}
+import { Form, FormField, FormFieldProps, Modal } from '@ui/common';
+import { useState } from 'react';
 
-export const Modal: React.FC<ModalProps> = ({ children, open, onClose }) => {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  useOnClickOutside(containerRef, onClose);
-
-  if (!open) return null;
-
-  return (
-    <div className="fixed overflow-hidden inset-0 bg-gray-900 bg-opacity-60 w-full h-full flex items-center justify-center px-6 py-4 z-50 box-border transition-opacity">
-      <Container onRef={(ref) => (containerRef.current = ref)}>{children}</Container>
-    </div>
-  );
-};
-
-interface ContainerProps {
-  onRef: (el: HTMLDivElement | null) => void;
-}
-
-export const Container: React.FC<ContainerProps> = ({ children, onRef }) => {
-  return (
-    <div
-      ref={onRef}
-      className="relative flex items-center flex-col z-40 max-w-md rounded-lg bg-gray-700 shadow-sm flex-1"
-    >
-      {children}
-    </div>
-  );
-};
+const inputFields: FormFieldProps[] = [
+  {
+    id: 'recipient',
+    label: 'To',
+    placeholder: "Recipient's SOL address"
+  },
+  { id: 'amount', label: 'Amount', placeholder: 'Amount (SOL)' }
+];
 
 export const SendInvoice = () => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -44,8 +21,9 @@ export const SendInvoice = () => {
     setModalOpen(true);
   };
 
-  const modalRef = useRef(null);
-  useOnClickOutside(modalRef, closeModal);
+  const handleSubmit = (values: Record<typeof inputFields[number]['id'], string>) => {
+    console.log(`Sending Invoice:`, values);
+  };
 
   return (
     <>
@@ -55,10 +33,45 @@ export const SendInvoice = () => {
       >
         Send Invoice
       </button>
-      <Modal open={modalOpen} onClose={closeModal}>
-        <div className="z-10 relative mx-0 my-auto overflow-x-hidden overflow-y-auto max-h-full px-3 py-5 text-gray-50 w-full list-none">
-          <h2>Send Invoice</h2>
-        </div>
+      <Modal className="bg-gray-800 bg-opacity-90 max-w-sm" open={modalOpen} onClose={closeModal}>
+        <Form
+          fields={inputFields}
+          onSubmit={handleSubmit}
+          className="z-10 relative mx-0 my-auto overflow-x-hidden overflow-y-auto max-h-full px-3 py-5 w-full list-none"
+        >
+          <h2 className="font-semibold text-2xl">Send Invoice</h2>
+          <Form.Fields>
+            <>
+              {inputFields.map((props) => (
+                <li key={props.id}>
+                  <FormField
+                    {...props}
+                    inputClassName="h-12 text-lg w-full text-white placeholder-white placeholder-opacity-40 bg-gray-800 rounded-md border border-gray-500 px-3 py-2"
+                  />
+                </li>
+              ))}
+            </>
+          </Form.Fields>
+          <Form.Actions>
+            {({ submitDisabled }) => (
+              <div className="flex items-center gap-3 mt-12">
+                <button
+                  type="submit"
+                  className="h-12 flex items-center justify-center w-1/2 bg-gray-700 rounded-lg font-bold text-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitDisabled}
+                  className="h-12 flex items-center justify-center w-1/2 bg-indigo-600 rounded-lg font-bold text-lg disabled:bg-gray-700 disabled:bg-opacity-90"
+                >
+                  Send
+                </button>
+              </div>
+            )}
+          </Form.Actions>
+        </Form>
       </Modal>
     </>
   );
