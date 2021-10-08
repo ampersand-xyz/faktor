@@ -1,11 +1,11 @@
 import { PublicKey } from '@solana/web3.js';
 
 export enum InvoiceStatus {
-  Open = 'open',
-  Paid = 'paid',
-  Rejected = 'rejected',
-  Spam = 'spam',
-  Void = 'void'
+  Open = 'Open',
+  Paid = 'Paid',
+  Rejected = 'Rejected',
+  Spam = 'Spam',
+  Void = 'Void'
 }
 export interface InvoiceData {
   /* Recipient wallets's SOL address */

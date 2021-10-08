@@ -1,14 +1,15 @@
+import { InvoiceStatus } from '@core';
 import { CashIcon } from '@heroicons/react/solid';
 import { useConnectedApp } from '@stores';
 
 import { InvoicesHeader } from './InvoicesHeader';
 
 const statusStyles = {
-  open: 'bg-yellow-100 text-yellow-800',
-  paid: 'bg-green-100 text-green-800',
-  rejected: 'bg-red-100 text-gray-800',
-  spam: 'bg-orange-100 text-gray-800',
-  void: 'bg-indigo-100 text-gray-800'
+  [InvoiceStatus.Open]: 'bg-yellow-100 text-yellow-800',
+  [InvoiceStatus.Paid]: 'bg-green-100 text-green-800',
+  [InvoiceStatus.Rejected]: 'bg-red-100 text-gray-800',
+  [InvoiceStatus.Spam]: 'bg-orange-100 text-gray-800',
+  [InvoiceStatus.Void]: 'bg-indigo-100 text-gray-800'
 };
 
 function classNames(...classes: string[]) {

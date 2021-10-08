@@ -10,7 +10,7 @@ use {
     },
 };
 
-declare_id!("8BHW97BHkSKUHjTxHd6g7eGRfLxQfmXniEMcAskxQTKi");
+declare_id!("ctoeKp85DThYGxzqcrjPd6w2EG1t43uKJJuxiZFzYWv");
 
 #[program]
 pub mod faktor {

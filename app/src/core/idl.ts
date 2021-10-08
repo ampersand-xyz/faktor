@@ -200,8 +200,19 @@ export const IDL: IdlConfig = {
       }
     }
   ],
-  errors: IDL_ERRORS,
+  errors: [
+    {
+      code: 300,
+      name: 'NotEnoughSOL',
+      msg: 'Not enough SOL'
+    },
+    {
+      code: 301,
+      name: 'InvoiceNotOpen',
+      msg: 'This invoice is not open'
+    }
+  ],
   metadata: {
-    address: 'GxReFFF7LTe64UeY9ijUmmqUiDdYKTVD8pw6FLZxEQ8i'
+    address: 'ctoeKp85DThYGxzqcrjPd6w2EG1t43uKJJuxiZFzYWv'
   }
 };
