@@ -78,7 +78,7 @@
      "outDir": "./lib",
      "noEmit": true                       /* Skip type checking all .d.ts files. */
   },
-  "include": ["test/*.spec.ts"],
+  "include": ["tests/*.spec.ts"],
   "exclude": ["node_modules"]
 
 }
