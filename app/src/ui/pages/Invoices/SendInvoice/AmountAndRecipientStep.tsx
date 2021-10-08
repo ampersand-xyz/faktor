@@ -1,4 +1,5 @@
 import { Form, FormField, FormFieldProps } from '@ui/common';
+import { useMemo } from 'react';
 import { InvoiceData } from './shared';
 
 const inputFields: FormFieldProps[] = [
@@ -20,6 +21,14 @@ export const AmountAndRecipientStep: React.FC<AmountAndRecipientStepProps> = ({
   onConfirm,
   onCancel
 }) => {
+  const initialValues = useMemo(
+    () => ({
+      ...initialData,
+      amount: initialData.amount > 0 ? initialData.amount.toString() : ''
+    }),
+    [initialData]
+  );
+
   const handleSubmit = (fieldValues: Record<string, string>) => {
     const data: InvoiceData = {
       recipient: fieldValues['recipient'],
@@ -30,10 +39,7 @@ export const AmountAndRecipientStep: React.FC<AmountAndRecipientStepProps> = ({
 
   return (
     <Form
-      initialValues={{
-        ...initialData,
-        amount: initialData.amount > 0 ? initialData.amount.toString() : ''
-      }}
+      initialValues={initialValues}
       fields={inputFields}
       onSubmit={handleSubmit}
       className="flex flex-col z-10 relative mx-0 my-auto overflow-x-hidden overflow-y-auto max-h-full px-4 py-5 w-full list-none"
