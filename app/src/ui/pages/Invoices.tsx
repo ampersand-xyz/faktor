@@ -29,11 +29,7 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
 
-const tabs = [
-  { name: 'All', current: true },
-  { name: 'Issuer', current: false },
-  { name: 'Debtor', current: false }
-];
+const tabs = [{ name: 'All' }, { name: 'Issuer' }, { name: 'Debtor' }];
 
 export const Invoices = () => {
   const { wallet } = useConnectedApp();
