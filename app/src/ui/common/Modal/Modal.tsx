@@ -35,7 +35,7 @@ export const Container: React.FC<ContainerProps> = ({ children, onRef, className
   return (
     <div
       ref={onRef}
-      className={`relative flex items-center flex-col z-40 rounded-lg shadow-sm flex-1 ${className}`}
+      className={`relative justify-center flex items-center flex-col z-40 rounded-lg shadow-sm flex-1 ${className}`}
     >
       {children}
     </div>

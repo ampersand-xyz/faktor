@@ -2,9 +2,9 @@ import React, { createContext, RefObject, useCallback, useContext, useState } fr
 import { FormFieldProps } from './FormField';
 
 export interface IFormContext {
-  formRef: React.RefObject<HTMLFormElement | null>;
+  formRef: React.MutableRefObject<HTMLFormElement | null>;
   fields: FormFieldProps[];
-  fieldValues: Array<{ id: string; value: string }>;
+  fieldValues: Record<string, string>;
   setFieldValue: (id: string, value: string) => void;
 }
 
@@ -28,21 +28,18 @@ export const FormProvider: React.FC<FormProviderProps> = ({
 }) => {
   const [formRef] = useState<React.RefObject<HTMLFormElement | null>>(initialFormRef);
   const [fields] = useState<FormFieldProps[]>(initialFields);
-  const [fieldValues, setFieldValues] = useState<Array<{ id: string; value: string }>>(
-    initialFields.map((item) => ({ id: item.id, value: '' }))
-  );
+  const [fieldValues, setFieldValues] = useState<Record<string, string>>(() => {
+    const result: Record<string, string> = {};
+    fields.forEach(({ id }) => {
+      result[id] = '';
+    });
+
+    return result;
+  });
 
   const setFieldValue = useCallback(
     (id: string, value: string) => {
-      setFieldValues((prev) => {
-        const index = prev.findIndex((item) => item.id === id);
-        if (index >= 0) {
-          const newList = [...prev.slice(0, index), { id, value }, ...prev.slice(index + 1)];
-
-          return newList;
-        }
-        throw new Error(`could not find item with id ${id}`);
-      });
+      setFieldValues((prev) => ({ ...prev, [id]: value }));
     },
     [setFieldValues]
   );

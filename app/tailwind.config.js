@@ -1,5 +1,10 @@
 module.exports = {
-  purge: ['./src/ui/*.{js,jsx,ts,tsx}', './public/index.html'],
+  purge: [
+    './src/ui/*.{js,jsx,ts,tsx}',
+    './src/ui/**/**/*.{js,jsx,ts,tsx}',
+    './src/ui/**/*.{js,jsx,ts,tsx}',
+    './public/index.html'
+  ],
   darkMode: false, // or 'media' or 'class'
   theme: {
     extend: {
@@ -17,7 +22,10 @@ module.exports = {
   variants: {
     extend: {
       textColor: ['hover', 'disabled'],
-      backgroundColor: ['disabled']
+      backgroundColor: ['disabled'],
+      backgroundOpacity: ['disabled'],
+      textOpacity: ['disabled'],
+      cursor: ['disabled']
     }
   },
   plugins: []

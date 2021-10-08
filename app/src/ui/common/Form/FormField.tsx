@@ -3,6 +3,7 @@ import { useFormContext } from './FormContext';
 
 export interface FormFieldProps {
   id: string;
+  type?: string;
   label?: string;
   placeholder?: string;
   labelClassName?: string;
@@ -11,13 +12,14 @@ export interface FormFieldProps {
 
 export const FormField: React.FC<FormFieldProps> = ({
   id,
+  type = 'text',
   label,
   placeholder,
   labelClassName = '',
   inputClassName = ''
 }) => {
   const { fieldValues, setFieldValue } = useFormContext();
-  const [value, setValue] = useState(fieldValues.find((item) => item.id === id)?.value ?? '');
+  const [value, setValue] = useState(fieldValues[id]);
 
   const handleChange = useCallback(
     ({ currentTarget: { value } }: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,14 +32,17 @@ export const FormField: React.FC<FormFieldProps> = ({
   return (
     <div>
       {label && (
-        <label className={labelClassName} htmlFor={id}>
-          {label}
-        </label>
+        <>
+          <label className={labelClassName} htmlFor={id}>
+            {label}
+          </label>
+          <br />
+        </>
       )}
-      <br />
+
       <input
         className={`${inputClassName}`}
-        type="text"
+        type={type}
         id={id}
         placeholder={placeholder}
         value={value}
