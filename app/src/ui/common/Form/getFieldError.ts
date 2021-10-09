@@ -1,3 +1,3 @@
-export const getFieldError = (fieldKey: string, value: string) => {
-  return !value ? 'Invalid value' : null;
-};
+export function getFieldError(fieldKey: string, value: string): string | null {
+  return value ? null : 'Field cannot be empty';
+}

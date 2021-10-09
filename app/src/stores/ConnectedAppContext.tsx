@@ -1,4 +1,5 @@
 import { InvoicesManager, InvoicesStore } from '@core/invoices';
+import { SolService } from '@core/solana';
 import { Wallet } from '@project-serum/anchor';
 import { useConnection } from '@stores';
 import { createContext, useContext, useEffect, useState } from 'react';
@@ -7,6 +8,7 @@ interface IConnectedAppContext {
   wallet: Wallet;
   disconnectWallet: () => void;
   invoicesManager: InvoicesManager;
+  solService: SolService;
 }
 
 export const ConnectedAppContext = createContext<IConnectedAppContext | undefined>(undefined);
@@ -33,15 +35,18 @@ export const ConnectedAppProvider: React.FC<ConnectedAppProviderProps> = ({
     new InvoicesManager(invoicesStore, connection, wallet, setInvoicesStore)
   );
 
+  const [solService, setSolService] = useState<SolService>(new SolService(connection));
+
   useEffect(() => {
     // TODO load invoices for this wallet and create InvoicesManager with the initial data
     // setInvoicesManager(new InvoicesManager(invoicesStore, connection, wallet, setInvoicesStore));
     InvoicesManager.load(connection, wallet, setInvoicesStore).then(setInvoicesManager);
     console.log(`\ninitialized InvoicesManager...\n`, { invoicesManager });
-  }, [wallet]);
+    setSolService(new SolService(connection));
+  }, [wallet, connection]);
 
   return (
-    <ConnectedAppContext.Provider value={{ wallet, disconnectWallet, invoicesManager }}>
+    <ConnectedAppContext.Provider value={{ wallet, disconnectWallet, invoicesManager, solService }}>
       {children}
     </ConnectedAppContext.Provider>
   );

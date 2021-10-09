@@ -35,6 +35,9 @@ module.exports = {
     extend: {
       minWidth: {
         card: '24rem'
+      },
+      width: {
+        card: '24rem'
       }
     }
   },

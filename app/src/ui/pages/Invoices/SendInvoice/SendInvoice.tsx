@@ -5,10 +5,12 @@ import { AmountAndRecipientStep } from './AmountAndRecipientStep';
 import { ConfirmSendInvoiceStep } from './ConfirmSendInvoiceStep';
 import { PrimaryAction } from '@ui/common';
 import { useConnectedApp } from '@stores';
+import { CheckingRecipientExistsStep } from './CheckingRecipientExistsStep';
 
 export enum SendInvoiceSteps {
   ChooseRecipientAndAmount = 0,
-  ConfirmSend = 1
+  CheckingRecipientExists = 1,
+  ConfirmSend = 2
 }
 
 const initialData = { debtor: '', amount: -1, memo: '' };
@@ -42,16 +44,23 @@ export const SendInvoice = () => {
     <>
       <PrimaryAction onClick={openModal}>Send Invoice</PrimaryAction>
       <Modal open={modalOpen} onClose={closeModal}>
-        {step === SendInvoiceSteps.ChooseRecipientAndAmount ? (
+        {step === SendInvoiceSteps.ChooseRecipientAndAmount && (
           <AmountAndRecipientStep
             initialData={data}
             onCancel={closeModal}
             onConfirm={(_data) => {
               setData(_data);
-              setStep(SendInvoiceSteps.ConfirmSend);
+              setStep(SendInvoiceSteps.CheckingRecipientExists);
             }}
           />
-        ) : (
+        )}
+        {step === SendInvoiceSteps.CheckingRecipientExists && (
+          <CheckingRecipientExistsStep
+            recipientAddress={data.debtor}
+            onVerified={() => setStep(step + 1)}
+          />
+        )}
+        {step === SendInvoiceSteps.ConfirmSend && (
           <ConfirmSendInvoiceStep
             onGoBack={() => setStep(step - 1)}
             data={data}

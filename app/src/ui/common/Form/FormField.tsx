@@ -22,7 +22,7 @@ export const FormField: React.FC<FormFieldProps> = ({
   labelClassName = '',
   inputClassName = 'h-12 text-lg w-full text-white placeholder-gray-600 bg-gray-900 rounded-md px-3 py-2',
   min = '0.0',
-  step = '0.000000001',
+  step,
   autoComplete = 'off',
   ...props
 }) => {
