@@ -1,6 +1,6 @@
 import { createAnchorProvider } from '../utils';
 import { Program, BN, Wallet, parseIdlErrors, ProgramError } from '@project-serum/anchor';
-import { Connection, Keypair, PublicKey, SystemProgram } from '@solana/web3.js';
+import { Connection, Keypair, PublicKey, Signer, SystemProgram } from '@solana/web3.js';
 import { InvoiceData, Invoice } from './types';
 import { IDL } from '@core/idl';
 
@@ -18,6 +18,8 @@ export const createInvoice = async (
 
   const debtorPublicKey = new PublicKey(data.debtor);
 
+  const walletSigner: Signer = wallet.payer;
+
   try {
     await program.rpc.issueInvoice(bnAmount, data.memo, {
       accounts: {
@@ -27,7 +29,7 @@ export const createInvoice = async (
         issuer: provider.wallet.publicKey,
         systemProgram: SystemProgram.programId
       },
-      signers: [invoice, wallet]
+      signers: [invoice, walletSigner]
     });
 
     const issuedInvoice = await program.account.invoice.fetch(invoice.publicKey);

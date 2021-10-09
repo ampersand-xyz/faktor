@@ -2,6 +2,7 @@ import { IDL } from '@core/idl';
 import { createAnchorProvider } from '@core/utils';
 import { parseIdlErrors, Program, ProgramError, Wallet } from '@project-serum/anchor';
 import { Connection } from '@solana/web3.js';
+import { InvoiceAccount } from '.';
 import { InvoicesStore } from './types';
 
 export const loadInvoices = async (
@@ -18,7 +19,10 @@ export const loadInvoices = async (
 
   try {
     const allInvoices = await program.account.invoice.all();
-    const issuedInvoices = allInvoices.map(({ publicKey, account }) => ({ publicKey, ...account }));
+    const issuedInvoices = allInvoices.map(({ publicKey, account }) => ({
+      publicKey,
+      account: account as InvoiceAccount
+    }));
     console.log('got invoices:\n\n', allInvoices);
     const store: InvoicesStore = { received: [], issued: issuedInvoices };
     return store;
