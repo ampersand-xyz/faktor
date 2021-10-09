@@ -15,9 +15,7 @@ export const createInvoice = async (
   const invoice = Keypair.generate();
   const charlie = Keypair.generate();
   const bnAmount = new BN(data.amount);
-
   const debtorPublicKey = new PublicKey(data.debtor);
-
   const walletSigner: Signer = wallet.payer;
 
   try {
@@ -34,7 +32,6 @@ export const createInvoice = async (
 
     const issuedInvoice = await program.account.invoice.fetch(invoice.publicKey);
 
-    console.log(`✅ Success: Issued invoice:`, issuedInvoice);
     return {
       publicKey: issuedInvoice.publicKey,
       account: {

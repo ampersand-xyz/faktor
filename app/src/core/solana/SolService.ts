@@ -1,4 +1,4 @@
-import { Connection, PublicKey } from '@solana/web3.js';
+import { Connection, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 
 export class SolService {
   constructor(private connection: Connection) {}
@@ -16,5 +16,12 @@ export class SolService {
       console.log(`❌ Wallet ${address} does not exist. `, err);
       return false;
     }
+  }
+
+  async airdrop(address: string) {
+    const pubkey = new PublicKey(address);
+    await this.connection
+      .requestAirdrop(pubkey, LAMPORTS_PER_SOL)
+      .then((signature) => this.connection.confirmTransaction(signature, 'confirmed'));
   }
 }

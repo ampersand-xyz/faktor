@@ -6,6 +6,7 @@ import { ConfirmSendInvoiceStep } from './ConfirmSendInvoiceStep';
 import { PrimaryAction } from '@ui/common';
 import { useConnectedApp } from '@stores';
 import { CheckingRecipientExistsStep } from './CheckingRecipientExistsStep';
+import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 export enum SendInvoiceSteps {
   ChooseRecipientAndAmount = 0,
@@ -33,8 +34,8 @@ export const SendInvoice = () => {
   };
 
   const confirmSendInvoice = async () => {
-    console.log('Confirmed invoice to send: ', JSON.stringify(data));
-    await invoicesManager?.createInvoice(data).catch((error) => {
+    const _data = { ...data, amount: data.amount * LAMPORTS_PER_SOL };
+    await invoicesManager?.createInvoice(_data).catch((error) => {
       console.error('Failed to issue invoice:', { error, data });
     });
     closeModal();
