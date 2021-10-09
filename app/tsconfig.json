@@ -1,16 +1,12 @@
 {
   "extends": "./tsconfig.paths.json",
-  "ts-node": {
-    "compilerOptions": {
-      "module": "es6"
-    }
-  },
   "compilerOptions": {
     "target": "es6",
     "lib": [
       "dom",
       "dom.iterable",
-      "esnext"
+      "esnext",
+      "ES2019"
     ],
     "allowJs": true,
     "skipLibCheck": true,
@@ -21,17 +17,11 @@
     "noFallthroughCasesInSwitch": true,
     "module": "esnext",
     "moduleResolution": "node",
-    "rootDir": "./src",
-    "outDir": "./dist",
     "resolveJsonModule": true,
-    "downlevelIteration": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "sourceMap": true,
-    "typeRoots": [
-      "node_modules/@types"
-    ]
+    "sourceMap": true
   },
   "include": [
     "src"
