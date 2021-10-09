@@ -9,11 +9,7 @@ export const loadInvoices = async (
   wallet: Wallet
 ): Promise<InvoicesStore> => {
   console.log('getting invoices...');
-  const provider = await createAnchorProvider(
-    connection,
-    { preflightCommitment: 'processed' },
-    wallet
-  );
+  const provider = createAnchorProvider(connection, { preflightCommitment: 'processed' }, wallet);
   const program = new Program(IDL, IDL.metadata.address, provider);
 
   try {
