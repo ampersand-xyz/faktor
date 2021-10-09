@@ -2,8 +2,7 @@ import { IDL } from '@core/idl';
 import { createAnchorProvider } from '@core/utils';
 import { parseIdlErrors, Program, ProgramError, Wallet } from '@project-serum/anchor';
 import { Connection } from '@solana/web3.js';
-import { InvoiceAccount } from '.';
-import { InvoicesStore } from './types';
+import { InvoicesStore, InvoiceAccount } from './types';
 
 export const loadInvoices = async (
   connection: Connection,
