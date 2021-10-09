@@ -1,9 +1,10 @@
 import { useConnectedApp } from '@stores';
-import { Card, Loader } from '@ui/common';
+import { Card, Loader, SecondaryAction } from '@ui/common';
 import { useEffect, useState } from 'react';
 interface Props {
   recipientAddress: string;
   onVerified: () => void;
+  onGoBack: () => void;
 }
 
 type Result = {
@@ -17,7 +18,9 @@ const enum ResultType {
   Error = 'ERROR'
 }
 
-export const CheckingRecipientExistsStep = ({ recipientAddress, onVerified }: Props) => {
+const TIMEOUT_DURATION = 1000;
+
+export const CheckingRecipientExistsStep = ({ recipientAddress, onVerified, onGoBack }: Props) => {
   const { solService } = useConnectedApp();
 
   const [result, setResult] = useState<Result | null>(null);
@@ -39,7 +42,7 @@ export const CheckingRecipientExistsStep = ({ recipientAddress, onVerified }: Pr
             type: ResultType.Error
           });
         }
-      }, 600);
+      }, TIMEOUT_DURATION);
     });
   }, [recipientAddress]);
 
@@ -47,7 +50,7 @@ export const CheckingRecipientExistsStep = ({ recipientAddress, onVerified }: Pr
     if (result?.type === ResultType.Success) {
       setTimeout(() => {
         onVerified();
-      }, 500);
+      }, TIMEOUT_DURATION);
     }
   }, [result]);
 
@@ -59,6 +62,13 @@ export const CheckingRecipientExistsStep = ({ recipientAddress, onVerified }: Pr
       <Card.Body>
         <p>{result.details}</p>
       </Card.Body>
+      {result.type === ResultType.Error && (
+        <Card.Footer>
+          <SecondaryAction className="w-full" onClick={onGoBack}>
+            Back
+          </SecondaryAction>
+        </Card.Footer>
+      )}
     </>
   ) : (
     <>
@@ -72,5 +82,5 @@ export const CheckingRecipientExistsStep = ({ recipientAddress, onVerified }: Pr
     </>
   );
 
-  return <Card className="shadow-lg bg-gray-800 h-[28rem] w-card">{content}</Card>;
+  return <Card className="shadow-lg bg-gray-800 h-card w-card">{content}</Card>;
 };

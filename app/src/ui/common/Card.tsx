@@ -3,7 +3,7 @@ import { ReactNode } from 'react';
 export const Card = ({ children, className = '' }: { children: ReactNode; className?: string }) => {
   return (
     <div
-      className={`min-w-card max-w-7xl py-3 my-auto flex flex-col justify-between rounded-lg text-left overflow-hidden transform transition-all ${className}`}
+      className={`${className} px-4 min-w-card max-w-7xl py-3 my-auto flex flex-col justify-around rounded-lg text-left overflow-hidden transform transition-all`}
     >
       {children}
     </div>

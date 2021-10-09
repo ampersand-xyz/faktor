@@ -58,11 +58,12 @@ export const SendInvoice = () => {
           <CheckingRecipientExistsStep
             recipientAddress={data.debtor}
             onVerified={() => setStep(step + 1)}
+            onGoBack={() => setStep(step - 1)}
           />
         )}
         {step === SendInvoiceSteps.ConfirmSend && (
           <ConfirmSendInvoiceStep
-            onGoBack={() => setStep(step - 1)}
+            onGoBack={() => setStep(step - 2)}
             data={data}
             onConfirm={confirmSendInvoice}
           />

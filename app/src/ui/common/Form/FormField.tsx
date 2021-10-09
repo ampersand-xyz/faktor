@@ -20,7 +20,7 @@ export const FormField: React.FC<FormFieldProps> = ({
   label,
   placeholder,
   labelClassName = '',
-  inputClassName = 'h-12 text-lg w-full text-white placeholder-gray-600 bg-gray-900 rounded-md px-3 py-2',
+  inputClassName = '',
   min = '0.0',
   step,
   autoComplete = 'off',
@@ -42,7 +42,7 @@ export const FormField: React.FC<FormFieldProps> = ({
   const displayErrorMessage = wasSubmitted && errorMessage;
 
   return (
-    <div className={`flex flex-col ${displayErrorMessage ? 'gap-2' : ''}`}>
+    <div className={`flex flex-col ${displayErrorMessage || label ? 'gap-2' : ''}`}>
       {label && (
         <>
           <label className={labelClassName} htmlFor={id}>
@@ -55,7 +55,7 @@ export const FormField: React.FC<FormFieldProps> = ({
       <input
         {...{ id, value, placeholder, autoComplete, min, type, step }}
         {...props}
-        className={`${inputClassName} ${
+        className={`${inputClassName} h-14 text-lg w-full text-white placeholder-gray-600 bg-gray-900 rounded-md px-3 py-2 ${
           displayErrorMessage ? 'border border-red-600' : 'border border-gray-700'
         }`}
         onChange={handleChange}

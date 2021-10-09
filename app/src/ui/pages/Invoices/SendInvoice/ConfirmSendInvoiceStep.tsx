@@ -14,7 +14,7 @@ export const ConfirmSendInvoiceStep: React.FC<ConfirmSendInvoiceStepProps> = ({
   onGoBack
 }) => {
   return (
-    <Card className="shadow-lg bg-gray-800 h-[28rem]">
+    <Card className="shadow-lg bg-gray-800 h-card w-card">
       <Card.Header>
         <h2>Confirm Invoice</h2>
       </Card.Header>
@@ -22,7 +22,7 @@ export const ConfirmSendInvoiceStep: React.FC<ConfirmSendInvoiceStepProps> = ({
         <div className="flex flex-col items-center space-y-3">
           <Section>
             <Label>Send to</Label>
-            <Value>@{data.debtor}</Value>
+            <Value>{data.debtor}</Value>
           </Section>
           <Section>
             <Label>Amount</Label>
@@ -54,7 +54,7 @@ export const ConfirmSendInvoiceStep: React.FC<ConfirmSendInvoiceStepProps> = ({
 
 export const Section: React.FC = ({ children }) => {
   return (
-    <div className="flex flex-col justify-center bg-gray-700 bg-opacity-40 rounded-md px-4 py-3 w-full space-y-0.5">
+    <div className="flex flex-col justify-center bg-gray-700 bg-opacity-40 rounded-md px-4 py-3 w-full space-y-0.5 overflow-hidden">
       {children}
     </div>
   );
@@ -65,7 +65,9 @@ export const Label: React.FC = ({ children }) => {
 };
 
 export const Value: React.FC = ({ children }) => {
-  return <span className="font-semibold text-lg">{children}</span>;
+  return (
+    <span className="font-semibold text-lg overflow-ellipsis overflow-x-hidden">{children}</span>
+  );
 };
 
 export const SendArrowIcon = () => {

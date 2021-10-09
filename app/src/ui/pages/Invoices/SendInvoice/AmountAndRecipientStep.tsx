@@ -50,7 +50,7 @@ export const AmountAndRecipientStep: React.FC<AmountAndRecipientStepProps> = ({
   return (
     <Form initialValues={initialValues} onSubmit={handleSubmit}>
       {({ submitDisabled }) => (
-        <Card className="shadow-lg bg-gray-800 h-[28rem]">
+        <Card className="shadow-lg bg-gray-800 h-card w-card">
           <Card.Header>
             <h2>Send Invoice</h2>
           </Card.Header>

@@ -34,10 +34,13 @@ module.exports = {
     },
     extend: {
       minWidth: {
-        card: '24rem'
+        card: '32rem'
       },
       width: {
-        card: '24rem'
+        card: '32rem'
+      },
+      height: {
+        card: '28rem'
       }
     }
   },
