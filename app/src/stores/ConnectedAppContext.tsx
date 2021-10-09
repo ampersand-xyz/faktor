@@ -1,4 +1,4 @@
-import { InvoicesManager, InvoicesStore } from '@core/invoices';
+import { InvoicesManager, InvoicesStore } from '@core/invoice';
 import { SolService } from '@core/solana';
 import { Wallet } from '@project-serum/anchor';
 import { useConnection } from '@stores';

@@ -1,4 +1,4 @@
-import { ClusterID, ICluster, verifyCluster } from '@core';
+import { ClusterID, ICluster, verifyCluster } from '@core/connection';
 import { useState, useCallback, useMemo } from 'react';
 import { SwitcherItem } from './SwitcherItem';
 

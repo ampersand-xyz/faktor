@@ -1,4 +1,4 @@
-import { InvoiceData } from '@core/invoices/types';
+import { InvoiceData } from '@core/invoice/types';
 import { Card, SolanaLogo } from '@ui/common';
 import { PrimaryAction, SecondaryAction } from '@ui/common';
 

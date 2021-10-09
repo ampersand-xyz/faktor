@@ -1,4 +1,4 @@
-import { InvoiceStatus } from '@core';
+import { InvoiceStatus } from '@core/invoice';
 import { CashIcon } from '@heroicons/react/solid';
 import { useConnectedApp } from '@stores';
 

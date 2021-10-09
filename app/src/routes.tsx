@@ -1,4 +1,4 @@
-import { Home, Invoices } from '@pages';
+import { Home, Invoices } from '@ui/pages';
 import { Wallet } from '@project-serum/anchor';
 import { useWallet, ConnectedAppProvider } from '@stores';
 import { useMemo } from 'react';

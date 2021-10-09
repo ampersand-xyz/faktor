@@ -1,4 +1,4 @@
-import { SOLANA_LOGO_URL } from '@core';
+const SOLANA_LOGO_URL = 'https://cryptologos.cc/logos/solana-sol-logo.svg?v=010';
 
 export const SolanaLogo = ({ size = 12 }: { size?: number }) => {
   const className = `h-${size}`;

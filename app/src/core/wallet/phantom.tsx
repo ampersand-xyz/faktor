@@ -1,4 +1,4 @@
-import { IWallet } from '@core';
+import { IWallet } from '@core/wallet/wallet';
 import { PublicKey, Transaction } from '@solana/web3.js';
 import EventEmitter from 'eventemitter3';
 

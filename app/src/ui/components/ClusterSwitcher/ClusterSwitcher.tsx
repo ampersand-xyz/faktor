@@ -1,4 +1,4 @@
-import { ClusterID, CLUSTERS, ICluster } from '@core';
+import { ClusterID, CLUSTERS, ICluster } from '@core/connection';
 import { useConnection } from '@stores';
 import { useCallback, useState } from 'react';
 import { CustomSwitcherItem } from './CustomSwitcherItem';

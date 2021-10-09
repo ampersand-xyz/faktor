@@ -1,4 +1,4 @@
-import { IWalletInfo, walletInfo } from '@core';
+import { IWalletInfo, walletInfo } from '@core/wallet/wallet';
 import { useOnClickOutside } from '@ui/hooks';
 import { useRef } from 'react';
 

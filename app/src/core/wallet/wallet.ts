@@ -1,11 +1,15 @@
 // @ts-ignore
 import { PublicKey, Transaction } from '@solana/web3.js';
 import EventEmitter from 'eventemitter3';
-import { WalletProviders } from './enums';
 import sollet from '../assets/sollet.jpg';
 import phantom from '../assets/phantom.jpg';
-import PhantomProvider from '@wallets/phantom';
-import SolletProvider from '@wallets/sollet';
+import PhantomProvider from './phantom';
+import SolletProvider from './sollet';
+
+export enum WalletProviders {
+  Sollet = 'Sollect',
+  Phantom = 'Phantom'
+}
 
 export interface IWalletInfo {
   id: WalletProviders;

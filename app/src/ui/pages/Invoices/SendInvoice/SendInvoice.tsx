@@ -1,5 +1,5 @@
 import { Modal } from '@ui/common';
-import { InvoiceData } from '@core/invoices/types';
+import { InvoiceData } from '@core/invoice';
 import { useState } from 'react';
 import { AmountAndRecipientStep } from './AmountAndRecipientStep';
 import { ConfirmSendInvoiceStep } from './ConfirmSendInvoiceStep';

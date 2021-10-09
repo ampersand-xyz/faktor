@@ -1,4 +1,4 @@
-import { ClusterID, connectToCluster, DEFAULT_CLUSTER, ICluster } from '@core';
+import { ClusterID, connectToCluster, DEFAULT_CLUSTER, ICluster } from '@core/connection';
 import { Connection } from '@solana/web3.js';
 import { createContext, useContext, useEffect, useState } from 'react';
 

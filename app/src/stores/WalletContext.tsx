@@ -1,4 +1,4 @@
-import { IWallet } from '@core';
+import { IWallet } from '@core/wallet/wallet';
 import { WalletNotFoundError } from '@solana/wallet-adapter-base';
 import { PublicKey } from '@solana/web3.js';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';

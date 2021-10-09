@@ -2,7 +2,7 @@ import { Routes } from './routes';
 import { ReactNode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { ConnectionProvider, WalletProvider } from '@stores';
-import { ClusterSwitcher, WalletConnector } from '@components';
+import { ClusterSwitcher, WalletConnector } from '@ui/components';
 
 const AppHeader = () => {
   return (

@@ -1,4 +1,4 @@
-import { createWallet, IWalletInfo } from '@core';
+import { createWallet, IWalletInfo } from '@core/wallet/wallet';
 import { useConnection, useWallet } from '@stores';
 import React, { HTMLAttributes, useCallback, useState } from 'react';
 import { WalletPicker } from './WalletPicker';

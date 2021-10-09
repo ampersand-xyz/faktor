@@ -1,5 +1,5 @@
 import { SOL_PRECISION_STEP } from '@core/constants';
-import { InvoiceData } from '@core/invoices/types';
+import { InvoiceData } from '@core/invoice/types';
 import { Card, Form, FormFieldProps, List } from '@ui/common';
 import { useMemo } from 'react';
 import { PrimaryAction, SecondaryAction } from '@ui/common';

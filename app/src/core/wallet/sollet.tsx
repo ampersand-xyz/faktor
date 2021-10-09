@@ -1,4 +1,4 @@
-import { IWallet } from '@core';
+import { IWallet } from '@core/wallet/wallet';
 import Wallet from '@project-serum/sol-wallet-adapter';
 
 export default class SolletProvider extends Wallet implements IWallet {
