@@ -63,3 +63,17 @@ input[type=number] {
     @apply font-semibold text-2xl leading-6;
   }
 }
+
+@layer utilities {
+  .anim-duration-3 {
+    animation-duration: 800ms;
+  }
+
+  .anim-delay-1 {
+    animation-delay: 300ms;
+  }
+
+  .anim-delay-2 {
+    animation-delay: 600ms;
+  }
+}

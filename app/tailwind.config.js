@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const defaultColors = require('tailwindcss/colors');
-const defaultSpacing = require('tailwindcss/colors');
 module.exports = {
   important: true,
   purge: [
@@ -26,10 +25,6 @@ module.exports = {
       indigo: {
         ...defaultColors.indigo,
         600: '#3D52D5'
-      },
-      spacing: {
-        ...defaultSpacing,
-        card: '24rem'
       }
     },
     extend: {

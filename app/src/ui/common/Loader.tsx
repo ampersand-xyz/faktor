@@ -1,5 +1,9 @@
-export const Loader = () => (
-  <div className="fixed top-0 left-0 right-0 bottom-0 w-full h-screen z-50 overflow-hidden bg-gray-700 opacity-75 flex flex-col items-center justify-center">
-    <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4"></div>
-  </div>
-);
+export const Loader = () => {
+  return (
+    <div className="flex items-center justify-center space-x-2">
+      <div className="w-8 h-8 bg-white rounded-full animate-bounce anim-duration-3"></div>
+      <div className="w-8 h-8 bg-white rounded-full animate-bounce anim-delay-1 anim-duration-3"></div>
+      <div className="w-8 h-8 bg-white rounded-full animate-bounce anim-delay-2 anim-duration-3"></div>
+    </div>
+  );
+};
