@@ -11,6 +11,7 @@ describe("faktor", () => {
   const provider = Provider.local();
   const alice = Keypair.generate();
   const bob = Keypair.generate();
+  const charlie = Keypair.generate();
   const program = anchor.workspace.Faktor;
   anchor.setProvider(provider);
 
@@ -27,6 +28,7 @@ describe("faktor", () => {
         escrow: escrow.publicKey,
         issuer: alice.publicKey,
         debtor: bob.publicKey,
+        creditor: charlie.publicKey,
         systemProgram: SystemProgram.programId,
       },
       signers: [escrow, alice],
@@ -43,6 +45,7 @@ describe("faktor", () => {
     return {
       alice: await provider.connection.getBalance(alice.publicKey),
       bob: await provider.connection.getBalance(bob.publicKey),
+      charlie: await provider.connection.getBalance(charlie.publicKey),
       escrow: escrowPubkey
         ? await provider.connection.getBalance(escrowPubkey)
         : 0,
@@ -60,13 +63,14 @@ describe("faktor", () => {
       .then((sig) => provider.connection.confirmTransaction(sig, "confirmed"));
   }
 
-  // Airdrop SOL to Alice and Bob
+  // Airdrop SOL to Alice, Bob, and Charlie
   before(async () => {
     await airdrop(alice.publicKey);
     await airdrop(bob.publicKey);
+    await airdrop(charlie.publicKey);
   });
 
-  it("Issues debt", async () => {
+  it("Alice issues contract", async () => {
     const initialBalances = await getBalances(null);
     const escrowPubkey = await issueDebt(1234);
 
@@ -75,15 +79,17 @@ describe("faktor", () => {
     const finalBalances = await getBalances(escrowPubkey);
     assert.ok(escrow.issuer.toString() === alice.publicKey.toString());
     assert.ok(escrow.debtor.toString() === bob.publicKey.toString());
-    assert.ok(escrow.collateralBalance.toString() === "1234");
-    assert.ok(escrow.debtBalance.toString() === "1234");
+    assert.ok(escrow.creditor.toString() === charlie.publicKey.toString());
+    assert.ok(escrow.debits.toString() === "1234");
+    assert.ok(escrow.credits.toString() === "0");
     assert.ok(escrow.memo === "For the wild ones.");
-    assert.ok(finalBalances.alice <= initialBalances.alice - 1234);
+    assert.ok(finalBalances.alice < initialBalances.alice);
     assert.ok(finalBalances.bob === initialBalances.bob);
-    assert.ok(finalBalances.escrow >= initialBalances.escrow + 1234);
+    assert.ok(finalBalances.charlie === initialBalances.charlie);
+    assert.ok(finalBalances.escrow > initialBalances.escrow);
   });
 
-  it("Pays debt in part", async () => {
+  it("Bob pays debits in part", async () => {
     const escrowPubkey = await issueDebt(1234);
     const initialBalances = await getBalances(escrowPubkey);
     const amount = 1000;
@@ -101,15 +107,17 @@ describe("faktor", () => {
     const finalBalances = await getBalances(escrowPubkey);
     assert.ok(escrow.issuer.toString() === alice.publicKey.toString());
     assert.ok(escrow.debtor.toString() === bob.publicKey.toString());
-    assert.ok(escrow.collateralBalance.toString() === "2234");
-    assert.ok(escrow.debtBalance.toString() === "234");
+    assert.ok(escrow.creditor.toString() === charlie.publicKey.toString());
+    assert.ok(escrow.debits.toString() === "234");
+    assert.ok(escrow.credits.toString() === "1000");
     assert.ok(escrow.memo === "For the wild ones.");
     assert.ok(finalBalances.alice === initialBalances.alice);
     assert.ok(finalBalances.bob === initialBalances.bob - amount);
+    assert.ok(finalBalances.charlie === initialBalances.charlie);
     assert.ok(finalBalances.escrow === initialBalances.escrow + amount);
   });
 
-  it("Pays debt in full", async () => {
+  it("Bob pays debits in full", async () => {
     const escrowPubkey = await issueDebt(1234);
     const initialBalances = await getBalances(escrowPubkey);
     const amount = 1234;
@@ -127,11 +135,49 @@ describe("faktor", () => {
     const finalBalances = await getBalances(escrowPubkey);
     assert.ok(escrow.issuer.toString() === alice.publicKey.toString());
     assert.ok(escrow.debtor.toString() === bob.publicKey.toString());
-    assert.ok(escrow.collateralBalance.toString() === "2468");
-    assert.ok(escrow.debtBalance.toString() === "0");
+    assert.ok(escrow.creditor.toString() === charlie.publicKey.toString());
+    assert.ok(escrow.credits.toString() === "1234");
+    assert.ok(escrow.debits.toString() === "0");
     assert.ok(escrow.memo === "For the wild ones.");
     assert.ok(finalBalances.alice === initialBalances.alice);
     assert.ok(finalBalances.bob === initialBalances.bob - amount);
+    assert.ok(finalBalances.charlie === initialBalances.charlie);
     assert.ok(finalBalances.escrow === initialBalances.escrow + amount);
+  });
+
+  it("Charlie collects credits in part", async () => {
+    const escrowPubkey = await issueDebt(1234);
+    const initialBalances = await getBalances(escrowPubkey);
+    const amount = 1000;
+    await program.rpc.pay(new BN(amount), {
+      accounts: {
+        escrow: escrowPubkey,
+        debtor: bob.publicKey,
+        systemProgram: SystemProgram.programId,
+      },
+      signers: [bob],
+    });
+    await program.rpc.collect(new BN(amount), {
+      accounts: {
+        escrow: escrowPubkey,
+        creditor: charlie.publicKey,
+        systemProgram: SystemProgram.programId,
+      },
+      signers: [charlie],
+    });
+
+    // Validation
+    const escrow = await program.account.escrow.fetch(escrowPubkey);
+    const finalBalances = await getBalances(escrowPubkey);
+    assert.ok(escrow.issuer.toString() === alice.publicKey.toString());
+    assert.ok(escrow.debtor.toString() === bob.publicKey.toString());
+    assert.ok(escrow.creditor.toString() === charlie.publicKey.toString());
+    assert.ok(escrow.credits.toString() === "0");
+    assert.ok(escrow.debits.toString() === "234");
+    assert.ok(escrow.memo === "For the wild ones.");
+    assert.ok(finalBalances.alice === initialBalances.alice);
+    assert.ok(finalBalances.bob === initialBalances.bob - amount);
+    assert.ok(finalBalances.charlie === initialBalances.charlie + amount);
+    assert.ok(finalBalances.escrow === initialBalances.escrow);
   });
 });
