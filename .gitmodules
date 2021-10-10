@@ -1,3 +1,0 @@
-[submodule "deps/solana-program-library"]
-	path = deps/solana-program-library
-	url = git@github.com:solana-labs/solana-program-library.git
