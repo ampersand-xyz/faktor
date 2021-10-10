@@ -1,13 +1,13 @@
 use {
     anchor_lang::{
         prelude::*,
-        solana_program::{program::invoke, system_instruction, system_program},
-        AnchorSerialize,
+        solana_program::{
+            program::invoke, 
+            system_instruction, 
+            system_program,
+        },
     },
-    std::{
-        clone::Clone,
-        cmp::min,
-    },
+    std::cmp::min,
 };
 
 declare_id!("8BHW97BHkSKUHjTxHd6g7eGRfLxQfmXniEMcAskxQTKi");
@@ -15,7 +15,7 @@ declare_id!("8BHW97BHkSKUHjTxHd6g7eGRfLxQfmXniEMcAskxQTKi");
 #[program]
 pub mod faktor {
     use super::*;
-    pub fn issue(ctx: Context<Issue>, balance: u64, memo: String) -> ProgramResult {
+    pub fn issue(ctx: Context<Issue>, bump: u8, balance: u64, memo: String) -> ProgramResult {
         // Parse accounts from context
         let issuer = &ctx.accounts.issuer;
         let debtor = &ctx.accounts.debtor;
@@ -29,6 +29,7 @@ pub mod faktor {
         escrow.credits = 0;
         // TODO: Max debt limit on memo length?
         escrow.memo = memo;
+        escrow.bump = bump;
         return Ok(());
     }
 
@@ -39,9 +40,10 @@ pub mod faktor {
         let system_program = &ctx.accounts.system_program;
         // Transfer SOL from the debtor to the escrow account
         let amount = min(amount, escrow.debits);
-        if debtor.lamports() < amount {
-            return Err(ErrorCode::NotEnoughSOL.into());
-        }
+        require!(
+            debtor.to_account_info().lamports() > amount, 
+            ErrorCode::NotEnoughSOL
+        );
         invoke(
             &system_instruction::transfer(&debtor.key(), &escrow.key(), amount),
             &[
@@ -56,35 +58,48 @@ pub mod faktor {
         return Ok(());
     }
 
-
     pub fn collect(ctx: Context<Collect>, amount: u64) -> ProgramResult {
         // Parse accounts from context
         let escrow = &mut ctx.accounts.escrow;
-        let creditor = &mut ctx.accounts.creditor;
-        let system_program = &ctx.accounts.system_program;
+        let _creditor = &mut ctx.accounts.creditor;
+        // let issuer = &ctx.accounts.issuer;
+        // let debtor = &ctx.accounts.debtor;
         // Transfer SOL from the escrow account to the creditor
-        if escrow.to_account_info().lamports() < amount || escrow.credits < amount {
-            return Err(ErrorCode::NotEnoughSOL.into());
-        }
-        invoke(
-            &system_instruction::transfer(&escrow.key(), &creditor.key(), amount),
-            &[
-                escrow.to_account_info().clone(),
-                creditor.to_account_info().clone(),
-                system_program.to_account_info().clone(),
-            ],
-        )?;
+        let amount = min(amount, escrow.credits);
+        require!(
+            escrow.to_account_info().lamports() > amount,
+            ErrorCode::NotEnoughSOL
+        );
+        // escrow.lamports = escrow.to_account_info().lamports() - amount;
+        // creditor.lamports = creditor.to_account_info().lamports() + amount;
+        // invoke_signed(
+        //     &system_instruction::transfer(&escrow.key(), &creditor.key(), amount),
+        //     &[
+        //         escrow.to_account_info().clone(),
+        //         creditor.to_account_info().clone(),
+        //         system_program.to_account_info().clone(),
+        //     ],
+        //     &[
+        //         &[&issuer.key.as_ref(), &debtor.key.as_ref(), &[escrow.bump]],
+        //     ]
+        // )?;
         // Update credits and debits balances
         escrow.credits = escrow.credits - amount;
         return Ok(());
     }
+
 }
 
 #[derive(Accounts)]
-#[instruction(amount: u64, memo: String)]
+#[instruction(bump: u8, amount: u64, memo: String)]
 pub struct Issue<'info> {
-    // TODO add seeds to make a PDA 
-    #[account(init, payer = issuer, space = 8 + 32 + 32 + 32 + 8 + 8 + 4 + memo.len())]
+    #[account(
+        init,  
+        seeds = [issuer.key.as_ref(), debtor.key.as_ref()],
+        bump = bump,
+        payer = issuer,
+        space = 8 + 32 + 32 + 32 + 8 + 8 + 4 + memo.len() + 1,
+    )]
     pub escrow: Account<'info, Escrow>,
     #[account(mut)]
     pub issuer: Signer<'info>,
@@ -96,8 +111,15 @@ pub struct Issue<'info> {
 
 #[derive(Accounts)]
 pub struct Pay<'info> {
-    #[account(mut, has_one = debtor)]
+    #[account(
+        mut, 
+        seeds = [issuer.key.as_ref(), debtor.key.as_ref()],
+        bump = escrow.bump,
+        has_one = issuer,
+        has_one = debtor,
+    )]
     pub escrow: Account<'info, Escrow>,
+    pub issuer: AccountInfo<'info>,
     #[account(mut)]
     pub debtor: Signer<'info>,
     #[account(address = system_program::ID)]
@@ -106,12 +128,19 @@ pub struct Pay<'info> {
 
 #[derive(Accounts)]
 pub struct Collect<'info> {
-    #[account(mut, has_one = creditor)]
+    #[account(
+        mut, 
+        seeds = [issuer.key.as_ref(), debtor.key.as_ref()],
+        bump = escrow.bump,
+        has_one = issuer,
+        has_one = debtor,
+        has_one = creditor,
+    )]
     pub escrow: Account<'info, Escrow>,
+    pub issuer: AccountInfo<'info>,
+    pub debtor: AccountInfo<'info>,
     #[account(mut)]
     pub creditor: Signer<'info>,
-    #[account(address = system_program::ID)]
-    pub system_program: Program<'info, System>,
 }
 
 #[account]
@@ -122,6 +151,7 @@ pub struct Escrow {
     pub debits: u64,
     pub credits: u64,
     pub memo: String,
+    pub bump: u8,
 }
 
 #[error]

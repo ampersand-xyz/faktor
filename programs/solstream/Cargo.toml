@@ -1,12 +1,12 @@
 [package]
-name = "cashflow"
+name = "solstream"
 version = "0.1.0"
 description = "Scheduled and recurring token transfers"
 edition = "2018"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "cashflow"
+name = "solstream"
 
 [features]
 no-entrypoint = []

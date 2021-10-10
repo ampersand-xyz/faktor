@@ -3,52 +3,39 @@ const anchor = require("@project-serum/anchor");
 const solana = require("@solana/web3.js");
 
 const { LAMPORTS_PER_SOL } = solana;
-const { BN, Provider } = anchor;
-const { SystemProgram, Keypair } = anchor.web3;
+const { BN, Provider, utils } = anchor;
+const { Keypair, SystemProgram, PublicKey } = anchor.web3;
 
 describe("faktor", () => {
   // Test environment
   const provider = Provider.local();
-  const alice = Keypair.generate();
-  const bob = Keypair.generate();
-  const charlie = Keypair.generate();
   const program = anchor.workspace.Faktor;
   anchor.setProvider(provider);
 
   /**
-   * issueDebt - Issues an debt statement with Alice as issuer and Bob as debtor.
+   * generateAccounts - Generates keypairs and PDAs for participants and program accounts needed in a test case
    *
-   * @param {number} balance The debt/collateral balance
+   * @returns {object} The accounts needed for a test case
    */
-  async function issueDebt(balance) {
-    const escrow = Keypair.generate();
-    const memo = `For the wild ones.`;
-    await program.rpc.issue(new BN(balance), memo, {
-      accounts: {
-        escrow: escrow.publicKey,
-        issuer: alice.publicKey,
-        debtor: bob.publicKey,
-        creditor: charlie.publicKey,
-        systemProgram: SystemProgram.programId,
-      },
-      signers: [escrow, alice],
-    });
-    return escrow.publicKey;
-  }
-
-  /**
-   * getBalances - Fetches the balances of Alice, Bob, and the escrow account.
-   *
-   * @returns {object} The balances
-   */
-  async function getBalances(escrowPubkey) {
+  async function generateAccounts() {
+    const alice = Keypair.generate();
+    const bob = Keypair.generate();
+    const charlie = Keypair.generate();
+    const dave = Keypair.generate();
+    const [escrowAddress, bump] = await PublicKey.findProgramAddress(
+      [alice.publicKey.toBuffer(), bob.publicKey.toBuffer()],
+      program.programId
+    );
+    await airdrop(alice.publicKey);
+    await airdrop(bob.publicKey);
+    await airdrop(charlie.publicKey);
+    await airdrop(dave.publicKey);
     return {
-      alice: await provider.connection.getBalance(alice.publicKey),
-      bob: await provider.connection.getBalance(bob.publicKey),
-      charlie: await provider.connection.getBalance(charlie.publicKey),
-      escrow: escrowPubkey
-        ? await provider.connection.getBalance(escrowPubkey)
-        : 0,
+      alice,
+      bob,
+      charlie,
+      dave,
+      escrow: { address: escrowAddress, bump: bump },
     };
   }
 
@@ -63,26 +50,55 @@ describe("faktor", () => {
       .then((sig) => provider.connection.confirmTransaction(sig, "confirmed"));
   }
 
-  // Airdrop SOL to Alice, Bob, and Charlie
-  before(async () => {
-    await airdrop(alice.publicKey);
-    await airdrop(bob.publicKey);
-    await airdrop(charlie.publicKey);
-  });
+  /**
+   * getBalances - Fetches the balances of Alice, Bob, and the escrow account.
+   *
+   * @returns {object} The balances
+   */
+  async function getBalances(accounts) {
+    return {
+      alice: await provider.connection.getBalance(accounts.alice.publicKey),
+      bob: await provider.connection.getBalance(accounts.bob.publicKey),
+      charlie: await provider.connection.getBalance(accounts.charlie.publicKey),
+      escrow: await provider.connection.getBalance(accounts.escrow.address),
+    };
+  }
 
-  it("Alice issues contract", async () => {
-    const initialBalances = await getBalances(null);
-    const escrowPubkey = await issueDebt(1234);
+  /**
+   * issueDebt - Issues an debt statement with Alice as issuer and Bob as debtor.
+   *
+   * @param {number} balance The debt/collateral balance
+   */
+  async function issueDebt(accounts, balance) {
+    const memo = `Ceci n'est pas un mémo`;
+    await program.rpc.issue(accounts.escrow.bump, new BN(balance), memo, {
+      accounts: {
+        escrow: accounts.escrow.address,
+        issuer: accounts.alice.publicKey,
+        debtor: accounts.bob.publicKey,
+        creditor: accounts.charlie.publicKey,
+        systemProgram: SystemProgram.programId,
+      },
+      signers: [accounts.alice],
+    });
+  }
+
+  it("Alice issues escrow contract", async () => {
+    const accounts = await generateAccounts();
+    const initialBalances = await getBalances(accounts);
+    await issueDebt(accounts, 1234);
 
     // Validation
-    const escrow = await program.account.escrow.fetch(escrowPubkey);
-    const finalBalances = await getBalances(escrowPubkey);
-    assert.ok(escrow.issuer.toString() === alice.publicKey.toString());
-    assert.ok(escrow.debtor.toString() === bob.publicKey.toString());
-    assert.ok(escrow.creditor.toString() === charlie.publicKey.toString());
+    const escrow = await program.account.escrow.fetch(accounts.escrow.address);
+    const finalBalances = await getBalances(accounts);
+    assert.ok(escrow.issuer.toString() === accounts.alice.publicKey.toString());
+    assert.ok(escrow.debtor.toString() === accounts.bob.publicKey.toString());
+    assert.ok(
+      escrow.creditor.toString() === accounts.charlie.publicKey.toString()
+    );
     assert.ok(escrow.debits.toString() === "1234");
     assert.ok(escrow.credits.toString() === "0");
-    assert.ok(escrow.memo === "For the wild ones.");
+    assert.ok(escrow.memo === "Ceci n'est pas un mémo");
     assert.ok(finalBalances.alice < initialBalances.alice);
     assert.ok(finalBalances.bob === initialBalances.bob);
     assert.ok(finalBalances.charlie === initialBalances.charlie);
@@ -90,27 +106,31 @@ describe("faktor", () => {
   });
 
   it("Bob pays debits in part", async () => {
-    const escrowPubkey = await issueDebt(1234);
-    const initialBalances = await getBalances(escrowPubkey);
+    const accounts = await generateAccounts();
+    await issueDebt(accounts, 1234);
+    const initialBalances = await getBalances(accounts);
     const amount = 1000;
     await program.rpc.pay(new BN(amount), {
       accounts: {
-        escrow: escrowPubkey,
-        debtor: bob.publicKey,
+        escrow: accounts.escrow.address,
+        issuer: accounts.alice.publicKey,
+        debtor: accounts.bob.publicKey,
         systemProgram: SystemProgram.programId,
       },
-      signers: [bob],
+      signers: [accounts.bob],
     });
 
     // Validation
-    const escrow = await program.account.escrow.fetch(escrowPubkey);
-    const finalBalances = await getBalances(escrowPubkey);
-    assert.ok(escrow.issuer.toString() === alice.publicKey.toString());
-    assert.ok(escrow.debtor.toString() === bob.publicKey.toString());
-    assert.ok(escrow.creditor.toString() === charlie.publicKey.toString());
+    const escrow = await program.account.escrow.fetch(accounts.escrow.address);
+    const finalBalances = await getBalances(accounts);
+    assert.ok(escrow.issuer.toString() === accounts.alice.publicKey.toString());
+    assert.ok(escrow.debtor.toString() === accounts.bob.publicKey.toString());
+    assert.ok(
+      escrow.creditor.toString() === accounts.charlie.publicKey.toString()
+    );
     assert.ok(escrow.debits.toString() === "234");
     assert.ok(escrow.credits.toString() === "1000");
-    assert.ok(escrow.memo === "For the wild ones.");
+    assert.ok(escrow.memo === "Ceci n'est pas un mémo");
     assert.ok(finalBalances.alice === initialBalances.alice);
     assert.ok(finalBalances.bob === initialBalances.bob - amount);
     assert.ok(finalBalances.charlie === initialBalances.charlie);
@@ -118,63 +138,73 @@ describe("faktor", () => {
   });
 
   it("Bob pays debits in full", async () => {
-    const escrowPubkey = await issueDebt(1234);
-    const initialBalances = await getBalances(escrowPubkey);
+    const accounts = await generateAccounts();
+    await issueDebt(accounts, 1234);
+    const initialBalances = await getBalances(accounts);
     const amount = 1234;
     await program.rpc.pay(new BN(amount), {
       accounts: {
-        escrow: escrowPubkey,
-        debtor: bob.publicKey,
+        escrow: accounts.escrow.address,
+        issuer: accounts.alice.publicKey,
+        debtor: accounts.bob.publicKey,
         systemProgram: SystemProgram.programId,
       },
-      signers: [bob],
+      signers: [accounts.bob],
     });
 
     // Validation
-    const escrow = await program.account.escrow.fetch(escrowPubkey);
-    const finalBalances = await getBalances(escrowPubkey);
-    assert.ok(escrow.issuer.toString() === alice.publicKey.toString());
-    assert.ok(escrow.debtor.toString() === bob.publicKey.toString());
-    assert.ok(escrow.creditor.toString() === charlie.publicKey.toString());
+    const escrow = await program.account.escrow.fetch(accounts.escrow.address);
+    const finalBalances = await getBalances(accounts);
+    assert.ok(escrow.issuer.toString() === accounts.alice.publicKey.toString());
+    assert.ok(escrow.debtor.toString() === accounts.bob.publicKey.toString());
+    assert.ok(
+      escrow.creditor.toString() === accounts.charlie.publicKey.toString()
+    );
     assert.ok(escrow.credits.toString() === "1234");
     assert.ok(escrow.debits.toString() === "0");
-    assert.ok(escrow.memo === "For the wild ones.");
+    assert.ok(escrow.memo === "Ceci n'est pas un mémo");
     assert.ok(finalBalances.alice === initialBalances.alice);
     assert.ok(finalBalances.bob === initialBalances.bob - amount);
     assert.ok(finalBalances.charlie === initialBalances.charlie);
     assert.ok(finalBalances.escrow === initialBalances.escrow + amount);
   });
 
-  it("Charlie collects credits in part", async () => {
-    const escrowPubkey = await issueDebt(1234);
-    const initialBalances = await getBalances(escrowPubkey);
+  it("Charlie collects credits", async () => {
+    const accounts = await generateAccounts();
+    await issueDebt(accounts, 1234);
+    const initialBalances = await getBalances(accounts);
     const amount = 1000;
     await program.rpc.pay(new BN(amount), {
       accounts: {
-        escrow: escrowPubkey,
-        debtor: bob.publicKey,
+        escrow: accounts.escrow.address,
+        issuer: accounts.alice.publicKey,
+        debtor: accounts.bob.publicKey,
         systemProgram: SystemProgram.programId,
       },
-      signers: [bob],
+      signers: [accounts.bob],
     });
     await program.rpc.collect(new BN(amount), {
       accounts: {
-        escrow: escrowPubkey,
-        creditor: charlie.publicKey,
+        escrow: accounts.escrow.address,
+        issuer: accounts.alice.publicKey,
+        debtor: accounts.bob.publicKey,
+        creditor: accounts.charlie.publicKey,
         systemProgram: SystemProgram.programId,
       },
-      signers: [charlie],
+      signers: [accounts.charlie],
     });
 
     // Validation
-    const escrow = await program.account.escrow.fetch(escrowPubkey);
-    const finalBalances = await getBalances(escrowPubkey);
-    assert.ok(escrow.issuer.toString() === alice.publicKey.toString());
-    assert.ok(escrow.debtor.toString() === bob.publicKey.toString());
-    assert.ok(escrow.creditor.toString() === charlie.publicKey.toString());
+    const escrow = await program.account.escrow.fetch(accounts.escrow.address);
+    const finalBalances = await getBalances(accounts);
+    assert.ok(escrow.issuer.toString() === accounts.alice.publicKey.toString());
+    assert.ok(escrow.debtor.toString() === accounts.bob.publicKey.toString());
+    assert.ok(
+      escrow.creditor.toString() === accounts.charlie.publicKey.toString()
+    );
     assert.ok(escrow.credits.toString() === "0");
     assert.ok(escrow.debits.toString() === "234");
-    assert.ok(escrow.memo === "For the wild ones.");
+    assert.ok(escrow.memo === "Ceci n'est pas un mémo");
     assert.ok(finalBalances.alice === initialBalances.alice);
     assert.ok(finalBalances.bob === initialBalances.bob - amount);
     assert.ok(finalBalances.charlie === initialBalances.charlie + amount);
