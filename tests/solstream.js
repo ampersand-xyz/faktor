@@ -32,7 +32,11 @@ describe("solstream", () => {
     const alice = Keypair.generate();
     const bob = Keypair.generate();
     const charlie = Keypair.generate();
-    const [streamAdress, bump] = await PublicKey.findProgramAddress(
+    const [queueAddress, queueBump] = await PublicKey.findProgramAddress(
+      [program.programId.toBuffer()],
+      program.programId
+    );
+    const [streamAddress, streamBump] = await PublicKey.findProgramAddress(
       [alice.publicKey.toBuffer(), bob.publicKey.toBuffer()],
       program.programId
     );
@@ -43,7 +47,8 @@ describe("solstream", () => {
       alice,
       bob,
       charlie,
-      stream: { address: streamAdress, bump: bump },
+      queue: { address: queueAddress, bump: queueBump },
+      stream: { address: streamAddress, bump: streamBump },
     };
   }
 
@@ -58,20 +63,20 @@ describe("solstream", () => {
       bob: await provider.connection.getBalance(accounts.bob.publicKey),
       charlie: await provider.connection.getBalance(accounts.charlie.publicKey),
       stream: await provider.connection.getBalance(accounts.stream.address),
+      queue: await provider.connection.getBalance(accounts.queue.address),
     };
   }
 
   /**
-   * createStream - Issues an debt statement with Alice as issuer and Bob as debtor.
+   * createQueue - Creates a task queue
    *
-   * @param {number} amount The amount to transfer per payment
+   * @param {object} accounts
    */
-  async function createStream(accounts, amount) {
-    await program.rpc.create(new BN(amount), accounts.stream.bump, {
+  async function createQueue(accounts) {
+    await program.rpc.createQueue(accounts.queue.bump, {
       accounts: {
-        stream: accounts.stream.address,
-        sender: accounts.alice.publicKey,
-        receiver: accounts.bob.publicKey,
+        queue: accounts.queue.address,
+        signer: accounts.alice.publicKey,
         systemProgram: SystemProgram.programId,
         clock: SYSVAR_CLOCK_PUBKEY,
         rent: SYSVAR_RENT_PUBKEY,
@@ -80,20 +85,69 @@ describe("solstream", () => {
     });
   }
 
-  it("Creates a stream", async () => {
+  /**
+   * createStream - Creates a payment stream from Alice to Bob.
+   *
+   * @param {number} amount The amount to transfer per payment
+   */
+  async function createStream(accounts, amount, interval) {
+    await program.rpc.createStream(
+      new BN(amount),
+      new BN(interval),
+      accounts.stream.bump,
+      {
+        accounts: {
+          stream: accounts.stream.address,
+          sender: accounts.alice.publicKey,
+          receiver: accounts.bob.publicKey,
+          systemProgram: SystemProgram.programId,
+          clock: SYSVAR_CLOCK_PUBKEY,
+          rent: SYSVAR_RENT_PUBKEY,
+        },
+        signers: [accounts.alice],
+      }
+    );
+  }
+
+  it("Creates a queue", async () => {
+    // Setup
     const accounts = await generateAccounts();
+
+    // Test
     const initialBalances = await getBalances(accounts);
-    await createStream(accounts, 1234);
+    await createQueue(accounts);
 
     // Validation
+    const queue = await program.account.queue.fetch(accounts.queue.address);
+    const finalBalances = await getBalances(accounts);
+    assert.ok(queue.bump === accounts.queue.bump);
+    assert.ok(finalBalances.alice <= initialBalances.alice);
+    assert.ok(finalBalances.bob === initialBalances.bob);
+    assert.ok(finalBalances.charlie === initialBalances.charlie);
+    assert.ok(finalBalances.queue >= initialBalances.queue);
+    assert.ok(finalBalances.stream === initialBalances.stream);
+  });
+
+  it("Creates a stream", async () => {
+    // Setup
+    const accounts = await generateAccounts();
+
+    // Test
+    const initialBalances = await getBalances(accounts);
+    await createStream(accounts, 1234, 10);
+
+    // Validate
     const stream = await program.account.stream.fetch(accounts.stream.address);
     const finalBalances = await getBalances(accounts);
     assert.ok(stream.sender.toString() === accounts.alice.publicKey.toString());
     assert.ok(stream.receiver.toString() === accounts.bob.publicKey.toString());
     assert.ok(stream.amount.toString() === "1234");
+    assert.ok(stream.interval.toString() === "10");
     assert.ok(stream.bump === accounts.stream.bump);
-    assert.ok(finalBalances.alice <= initialBalances.alice);
+    assert.ok(finalBalances.alice <= initialBalances.alice - 500);
     assert.ok(finalBalances.bob === initialBalances.bob);
     assert.ok(finalBalances.charlie === initialBalances.charlie);
+    assert.ok(finalBalances.queue === initialBalances.queue);
+    assert.ok(finalBalances.stream >= initialBalances.stream + 500);
   });
 });

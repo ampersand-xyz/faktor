@@ -61,33 +61,19 @@ pub mod faktor {
     pub fn collect(ctx: Context<Collect>, amount: u64) -> ProgramResult {
         // Parse accounts from context
         let escrow = &mut ctx.accounts.escrow;
-        let _creditor = &mut ctx.accounts.creditor;
-        // let issuer = &ctx.accounts.issuer;
-        // let debtor = &ctx.accounts.debtor;
+        let creditor = &ctx.accounts.creditor;
         // Transfer SOL from the escrow account to the creditor
         let amount = min(amount, escrow.credits);
         require!(
             escrow.to_account_info().lamports() > amount,
             ErrorCode::NotEnoughSOL
         );
-        // escrow.lamports = escrow.to_account_info().lamports() - amount;
-        // creditor.lamports = creditor.to_account_info().lamports() + amount;
-        // invoke_signed(
-        //     &system_instruction::transfer(&escrow.key(), &creditor.key(), amount),
-        //     &[
-        //         escrow.to_account_info().clone(),
-        //         creditor.to_account_info().clone(),
-        //         system_program.to_account_info().clone(),
-        //     ],
-        //     &[
-        //         &[&issuer.key.as_ref(), &debtor.key.as_ref(), &[escrow.bump]],
-        //     ]
-        // )?;
+        **escrow.to_account_info().try_borrow_mut_lamports()? -= amount;
+        **creditor.to_account_info().try_borrow_mut_lamports()? += amount;
         // Update credits and debits balances
         escrow.credits = escrow.credits - amount;
         return Ok(());
     }
-
 }
 
 #[derive(Accounts)]
@@ -95,7 +81,7 @@ pub mod faktor {
 pub struct Issue<'info> {
     #[account(
         init,  
-        seeds = [issuer.key.as_ref(), debtor.key.as_ref()],
+        seeds = [issuer.key().as_ref(), debtor.key().as_ref()],
         bump = bump,
         payer = issuer,
         space = 8 + 32 + 32 + 32 + 8 + 8 + 4 + memo.len() + 1,
@@ -113,7 +99,7 @@ pub struct Issue<'info> {
 pub struct Pay<'info> {
     #[account(
         mut, 
-        seeds = [issuer.key.as_ref(), debtor.key.as_ref()],
+        seeds = [issuer.key().as_ref(), debtor.key().as_ref()],
         bump = escrow.bump,
         has_one = issuer,
         has_one = debtor,
@@ -130,7 +116,7 @@ pub struct Pay<'info> {
 pub struct Collect<'info> {
     #[account(
         mut, 
-        seeds = [issuer.key.as_ref(), debtor.key.as_ref()],
+        seeds = [issuer.key().as_ref(), debtor.key().as_ref()],
         bump = escrow.bump,
         has_one = issuer,
         has_one = debtor,
@@ -158,4 +144,6 @@ pub struct Escrow {
 pub enum ErrorCode {
     #[msg("Not enough SOL")]
     NotEnoughSOL,
+    #[msg("Something happened")]
+    SomethingHappened,
 }

@@ -172,7 +172,6 @@ describe("faktor", () => {
   it("Charlie collects credits", async () => {
     const accounts = await generateAccounts();
     await issueDebt(accounts, 1234);
-    const initialBalances = await getBalances(accounts);
     const amount = 1000;
     await program.rpc.pay(new BN(amount), {
       accounts: {
@@ -183,6 +182,7 @@ describe("faktor", () => {
       },
       signers: [accounts.bob],
     });
+    const initialBalances = await getBalances(accounts);
     await program.rpc.collect(new BN(amount), {
       accounts: {
         escrow: accounts.escrow.address,
@@ -206,8 +206,8 @@ describe("faktor", () => {
     assert.ok(escrow.debits.toString() === "234");
     assert.ok(escrow.memo === "Ceci n'est pas un mémo");
     assert.ok(finalBalances.alice === initialBalances.alice);
-    assert.ok(finalBalances.bob === initialBalances.bob - amount);
+    assert.ok(finalBalances.bob === initialBalances.bob);
     assert.ok(finalBalances.charlie === initialBalances.charlie + amount);
-    assert.ok(finalBalances.escrow === initialBalances.escrow);
+    assert.ok(finalBalances.escrow === initialBalances.escrow - amount);
   });
 });
