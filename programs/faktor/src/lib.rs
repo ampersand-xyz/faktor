@@ -72,6 +72,7 @@ pub mod faktor {
         **creditor.to_account_info().try_borrow_mut_lamports()? += amount;
         // Update credits and debits balances
         escrow.credits = escrow.credits - amount;
+        // TODO delete account if debits and credits are zero
         return Ok(());
     }
 }
@@ -139,6 +140,9 @@ pub struct Escrow {
     pub memo: String,
     pub bump: u8,
 }
+
+
+
 
 #[error]
 pub enum ErrorCode {

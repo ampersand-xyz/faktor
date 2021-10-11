@@ -1,10 +1,13 @@
 use {
     anchor_lang::{
         prelude::*,
-        solana_program::{program::invoke, system_instruction, system_program},
         AnchorSerialize,
+        solana_program::{
+            program::invoke, 
+            system_instruction, 
+            system_program
+        },
     },
-    // priority_queue::PriorityQueue,
 };
 
 declare_id!("7DJcaKq8MFF1CJDtBGA1tUJfdNyjzbmfQYGvBVW3t4fG");
@@ -31,45 +34,38 @@ declare_id!("7DJcaKq8MFF1CJDtBGA1tUJfdNyjzbmfQYGvBVW3t4fG");
 #[program]
 pub mod solstream {
     use super::*;
-    pub fn create_queue(ctx: Context<CreateQueue>, bump: u8) -> ProgramResult {
-        // Get accounts
-        let queue = &mut ctx.accounts.queue;
-        // Initial task queue
-        queue.bump = bump;
-        return Ok(())
-    }
-
     pub fn create_stream(
         ctx: Context<CreateStream>, 
-        amount: u64, 
+        amount: u64,
         interval: u64,
+        balance: u64,
         bump: u8,
     ) -> ProgramResult {
         // Get accounts
         let stream = &mut ctx.accounts.stream;
-        // let queue = &mut ctx.accounts.queue;
         let sender = &mut ctx.accounts.sender;
         let receiver = &mut ctx.accounts.receiver;
         let system_program = &mut ctx.accounts.system_program;
+        let clock = &ctx.accounts.clock;
 
         // Initialize stream 
         stream.sender = sender.key();
         stream.receiver = receiver.key();
         stream.amount = amount;
         stream.interval = interval;
+        stream.timestamp = clock.unix_timestamp;
         stream.bump = bump;
 
         // Transfer fee into task queue pool
-        let fee  = 500; // TODO fee should be a function of rent 
         require!(
-            sender.to_account_info().lamports() > fee,
+            sender.to_account_info().lamports() > balance,
             ErrorCode::NotEnoughSOL,
         );
         invoke(
             &system_instruction::transfer(
                 &sender.key(), 
                 &stream.key(), 
-                fee
+                balance
             ),
             &[
                 sender.to_account_info().clone(),
@@ -78,16 +74,63 @@ pub mod solstream {
             ],
         )?;
 
-        // TODO Collect signatures/approvals/rent/gas for transfers to be executed later. 
-        // TODO Build a priority queue of transfer tasks.
-        // TODO Process tasks from priority queue.
-        // TODO Re-enqueue task if recurring.
-        // TODO API to cancel a cash flow.
-        // TODO API to estimate rent.
-
         return Ok(());
     }
 
+    pub fn fund_stream(ctx: Context<FundStream>, amount: u64) -> ProgramResult {
+        // Get accounts
+        let stream = &mut ctx.accounts.stream;
+        let sender = &mut ctx.accounts.sender;
+        let system_program = &mut ctx.accounts.system_program;
+    
+        
+        // Transfer funds into stream balance
+        require!(
+            sender.to_account_info().lamports() > amount,
+            ErrorCode::NotEnoughSOL,
+        );
+        invoke(
+            &system_instruction::transfer(
+                &sender.key(), 
+                &stream.key(), 
+                amount
+            ),
+            &[
+                sender.to_account_info().clone(),
+                stream.to_account_info().clone(),
+                system_program.to_account_info().clone(),
+            ],
+        )?;
+        
+        return Ok(());        
+    }
+
+    pub fn process_stream(ctx: Context<ProcessStream>) -> ProgramResult {
+        // Get accounts
+        let stream = &mut ctx.accounts.stream;
+        let signer = &mut ctx.accounts.signer;
+        let receiver = &mut ctx.accounts.receiver;
+        let _system_program = &mut ctx.accounts.system_program;
+        let _clock = &mut ctx.accounts.clock;
+
+        // TODO validate the stream timestamp
+
+        // Transfer stream amount from escrow to receiver
+        // Transfer bounty from escrow to signer
+        let bounty: u64 = 500;  
+        let total_amount = stream.amount + bounty;
+        require!(
+            stream.to_account_info().lamports() > total_amount,
+            ErrorCode::NotEnoughSOL,
+        );
+        **stream.to_account_info().try_borrow_mut_lamports()? -= total_amount;
+        **receiver.to_account_info().try_borrow_mut_lamports()? += stream.amount;
+        **signer.to_account_info().try_borrow_mut_lamports()? += bounty;
+
+        // TODO update the stream timestamp
+
+        return Ok(());
+    }
 }
 
 
@@ -96,33 +139,14 @@ pub mod solstream {
  */
 
 #[derive(Accounts)]
-#[instruction(bump: u8)]
-pub struct CreateQueue<'info> {
-    #[account(
-        init, 
-        seeds = [program_id.as_ref()],
-        bump = bump,
-        payer = signer, 
-        space = 8 + 1
-    )]
-    pub queue: Account<'info, Queue>,
-    #[account(mut)] // TODO restrict caller address?
-    pub signer: Signer<'info>,
-    #[account(address = system_program::ID)]
-    pub system_program: Program<'info, System>,
-    pub clock: Sysvar<'info, Clock>,
-    pub rent: Sysvar<'info, Rent>,
-}
-
-#[derive(Accounts)]
-#[instruction(amount: u64, interval: u64, bump: u8)]
+#[instruction(amount: u64, interval: u64, balance: u64, bump: u8)]
 pub struct CreateStream<'info> {
     #[account(
         init, 
         seeds = [sender.key().as_ref(), receiver.key().as_ref()],
         bump = bump,
         payer = sender, 
-        space = 8 + 32 + 32 + 8 + 8 + 1
+        space = 8 + 32 + 32 + 8 + 8 + 8 + 1
     )]
     pub stream: Account<'info, Stream>,
     #[account(mut)]
@@ -135,6 +159,41 @@ pub struct CreateStream<'info> {
     pub rent: Sysvar<'info, Rent>,
 }
 
+#[derive(Accounts)]
+pub struct FundStream<'info> {
+    #[account(
+        mut,
+        seeds = [sender.key().as_ref(), receiver.key().as_ref()],
+        bump = stream.bump,
+    )]
+    pub stream: Account<'info, Stream>,
+    #[account(mut)]
+    pub sender: Signer<'info>,
+    #[account(mut)]
+    pub receiver: AccountInfo<'info>,
+    #[account(address = system_program::ID)]
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct ProcessStream<'info> {
+    #[account(
+        mut,
+        seeds = [sender.key().as_ref(), receiver.key().as_ref()],
+        bump = stream.bump,
+    )]
+    pub stream: Account<'info, Stream>,
+    #[account(mut)]
+    pub signer: Signer<'info>,
+    #[account(mut)]
+    pub sender: AccountInfo<'info>,
+    #[account(mut)]
+    pub receiver: AccountInfo<'info>,
+    #[account(address = system_program::ID)]
+    pub system_program: Program<'info, System>,
+    pub clock: Sysvar<'info, Clock>,
+    pub rent: Sysvar<'info, Rent>,
+}
 
 /**
  * Program-owned Accounts
@@ -146,12 +205,7 @@ pub struct Stream {
     pub receiver: Pubkey,
     pub amount: u64,
     pub interval: u64,
-    pub bump: u8,
-}
-
-#[account]
-pub struct Queue {
-    // pub tasks: PriorityQueue<Pubkey, String>,
+    pub timestamp: i64,
     pub bump: u8,
 }
 
