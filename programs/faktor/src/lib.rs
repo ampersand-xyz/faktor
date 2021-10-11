@@ -82,7 +82,7 @@ pub mod faktor {
 pub struct Issue<'info> {
     #[account(
         init,  
-        seeds = [issuer.key().as_ref(), debtor.key().as_ref()],
+        seeds = [issuer.key().as_ref(), debtor.key().as_ref(), creditor.key().as_ref()],
         bump = bump,
         payer = issuer,
         space = 8 + 32 + 32 + 32 + 8 + 8 + 4 + memo.len() + 1,
@@ -100,7 +100,7 @@ pub struct Issue<'info> {
 pub struct Pay<'info> {
     #[account(
         mut, 
-        seeds = [issuer.key().as_ref(), debtor.key().as_ref()],
+        seeds = [issuer.key().as_ref(), debtor.key().as_ref(), creditor.key().as_ref()],
         bump = escrow.bump,
         has_one = issuer,
         has_one = debtor,
@@ -109,6 +109,7 @@ pub struct Pay<'info> {
     pub issuer: AccountInfo<'info>,
     #[account(mut)]
     pub debtor: Signer<'info>,
+    pub creditor: AccountInfo<'info>,
     #[account(address = system_program::ID)]
     pub system_program: Program<'info, System>,
 }
@@ -117,7 +118,7 @@ pub struct Pay<'info> {
 pub struct Collect<'info> {
     #[account(
         mut, 
-        seeds = [issuer.key().as_ref(), debtor.key().as_ref()],
+        seeds = [issuer.key().as_ref(), debtor.key().as_ref(), creditor.key().as_ref()],
         bump = escrow.bump,
         has_one = issuer,
         has_one = debtor,

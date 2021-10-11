@@ -23,7 +23,11 @@ describe("faktor", () => {
     const charlie = Keypair.generate();
     const dave = Keypair.generate();
     const [escrowAddress, bump] = await PublicKey.findProgramAddress(
-      [alice.publicKey.toBuffer(), bob.publicKey.toBuffer()],
+      [
+        alice.publicKey.toBuffer(),
+        bob.publicKey.toBuffer(),
+        charlie.publicKey.toBuffer(),
+      ],
       program.programId
     );
     await airdrop(alice.publicKey);
@@ -115,6 +119,7 @@ describe("faktor", () => {
         escrow: accounts.escrow.address,
         issuer: accounts.alice.publicKey,
         debtor: accounts.bob.publicKey,
+        creditor: accounts.charlie.publicKey,
         systemProgram: SystemProgram.programId,
       },
       signers: [accounts.bob],
@@ -147,6 +152,7 @@ describe("faktor", () => {
         escrow: accounts.escrow.address,
         issuer: accounts.alice.publicKey,
         debtor: accounts.bob.publicKey,
+        creditor: accounts.charlie.publicKey,
         systemProgram: SystemProgram.programId,
       },
       signers: [accounts.bob],
@@ -178,6 +184,7 @@ describe("faktor", () => {
         escrow: accounts.escrow.address,
         issuer: accounts.alice.publicKey,
         debtor: accounts.bob.publicKey,
+        creditor: accounts.charlie.publicKey,
         systemProgram: SystemProgram.programId,
       },
       signers: [accounts.bob],
