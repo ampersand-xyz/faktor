@@ -1,6 +1,6 @@
 import { InvoicesManager, InvoicesStore } from '@core/invoice';
 import { SolService } from '@core/solana';
-import { Wallet } from '@project-serum/anchor';
+import { Provider, Wallet } from '@project-serum/anchor';
 import { useConnection } from '@stores';
 import { createContext, useContext, useEffect, useState } from 'react';
 
@@ -32,7 +32,11 @@ export const ConnectedAppProvider: React.FC<ConnectedAppProviderProps> = ({
   const [invoicesStore, setInvoicesStore] = useState<InvoicesStore>({ received: [], issued: [] });
   const { connection } = useConnection();
   const [invoicesManager, setInvoicesManager] = useState<InvoicesManager>(
-    new InvoicesManager(invoicesStore, connection, wallet, setInvoicesStore)
+    new InvoicesManager(
+      invoicesStore,
+      new Provider(connection, wallet, { preflightCommitment: 'confirmed' }),
+      setInvoicesStore
+    )
   );
 
   const [solService, setSolService] = useState<SolService>(new SolService(connection));
