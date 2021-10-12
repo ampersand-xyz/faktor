@@ -3,7 +3,7 @@ import { ReactNode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import { getPhantomWallet } from '@solana/wallet-adapter-wallets';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { WalletModalProvider, WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { CLUSTERS } from '@core';
 
 const AppHeader = () => {
@@ -35,9 +35,11 @@ export default function AppWithProviders() {
     <BrowserRouter>
       <ConnectionProvider endpoint={CLUSTERS[2].url}>
         <WalletProvider wallets={[getPhantomWallet()]}>
-          <AppLayout>
-            <Routes />
-          </AppLayout>
+          <WalletModalProvider>
+            <AppLayout>
+              <Routes />
+            </AppLayout>
+          </WalletModalProvider>
         </WalletProvider>
       </ConnectionProvider>
     </BrowserRouter>

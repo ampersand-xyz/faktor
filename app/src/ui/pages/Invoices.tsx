@@ -105,6 +105,7 @@ export const Invoices = ({ wallet }: { wallet: AnchorWallet }) => {
   return (
     <div className="relative flex h-screen overflow-hidden bg-gray-100">
       <div className="flex-1 overflow-auto focus:outline-none">
+        <button onClick={issueInvoice}>ISSUE INVOICE</button>
         <main className="relative z-0 flex-1 pb-8 overflow-y-auto">
           {/* Page header */}
           <div className="mt-8">

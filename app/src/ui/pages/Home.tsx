@@ -1,7 +1,7 @@
-import { useWallet } from '@stores';
+import { useWallet } from '@solana/wallet-adapter-react';
 
 export const Home = () => {
-  const { connected, walletPublicKey } = useWallet();
+  const { connected, publicKey: walletPublicKey } = useWallet();
 
   return (
     <>
