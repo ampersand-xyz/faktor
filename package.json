@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "start": "cd app && yarn start"
+  },
   "dependencies": {
     "@project-serum/anchor": "^0.17.1-beta.1"
   },
