@@ -1,8 +1,8 @@
 // @ts-ignore
 import { PublicKey, Transaction } from '@solana/web3.js';
 import EventEmitter from 'eventemitter3';
-import sollet from '../assets/sollet.jpg';
-import phantom from '../assets/phantom.jpg';
+import sollet from '../../assets/sollet.jpg';
+import phantom from '../../assets/phantom.jpg';
 import PhantomProvider from './phantom';
 import SolletProvider from './sollet';
 

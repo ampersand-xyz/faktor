@@ -9,14 +9,13 @@ import {
 import { InvoiceData, Invoice } from './types';
 import { IDL } from '@core/idl';
 import { INVOICE_DATA_SIZE, INVOICE_NONCE_SEED_STRING } from '@core/constants';
-import { getOrCreateUserKeypair } from '@core/user';
 
 export const createInvoice = async (provider: Provider, data: InvoiceData): Promise<Invoice> => {
   const program = new Program(IDL, IDL.metadata.address, provider);
 
   // TODO check if we already have a keypair generated for this wallet,
   // if not, create one, and store it where we can find it by the wallet.
-  const user = await getOrCreateUserKeypair(provider.connection);
+  const user = Keypair.generate();
 
   const invoicePubkey = await PublicKey.createWithSeed(
     user.publicKey,
