@@ -191,5 +191,8 @@
       "name": "InvoiceNotOpen",
       "msg": "This invoice is not open"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "ctoeKp85DThYGxzqcrjPd6w2EG1t43uKJJuxiZFzYWv"
+  }
 }

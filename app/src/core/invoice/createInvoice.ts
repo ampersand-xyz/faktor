@@ -24,9 +24,9 @@ export const createInvoice = async (provider: Provider, data: InvoiceData): Prom
   try {
     await program.rpc.issueInvoice(bnAmount, data.memo, {
       accounts: {
-        collector: charlie.publicKey,
+        creditor: charlie.publicKey,
         debtor: debtorPublicKey,
-        invoice: invoicePubkey,
+        escrow: invoicePubkey,
         issuer: provider.wallet.publicKey,
         systemProgram: SystemProgram.programId
       }
