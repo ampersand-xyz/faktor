@@ -1,7 +1,7 @@
 import { CashIcon } from '@heroicons/react/solid';
-import { BN, Program, Provider, web3 } from '@project-serum/anchor';
+import { BN, Program, Provider, Wallet, web3 } from '@project-serum/anchor';
+import { AnchorWallet } from '@solana/wallet-adapter-react';
 import { Connection, PublicKey } from '@solana/web3.js';
-import { useConnectedApp } from '@stores';
 import { useEffect, useState } from 'react';
 
 import idl from '../../idl.json';
@@ -31,14 +31,14 @@ function classNames(...classes: string[]) {
 
 const tabs = [{ name: 'All' }, { name: 'Issuer' }, { name: 'Debtor' }];
 
-export const Invoices = () => {
-  const { wallet } = useConnectedApp();
+export const Invoices = ({ wallet }: { wallet: AnchorWallet }) => {
   const [allInvoices, setAllInvoices] = useState<any[]>([]);
   const [debtorInvoices, setDebtorInvoices] = useState<any[]>([]);
   const [issuerInvoices, setIssuerInvoices] = useState<any[]>([]);
   const [currentTab, setCurrentTab] = useState('All');
 
   async function getProvider() {
+    if (!wallet.publicKey) throw new Error();
     // Create the provider and return it to the caller
     // Network set to local network for now
     const network = 'http://127.0.0.1:8899';
@@ -140,7 +140,7 @@ export const Invoices = () => {
                           : 'text-gray-500 hover:text-gray-700',
                         'px-3 py-2 font-medium text-sm rounded-md cursor-pointer'
                       )}
-                      aria-current={tab.current ? 'page' : undefined}
+                      aria-current={tab.name ? 'page' : undefined}
                     >
                       {tab.name}
                     </a>

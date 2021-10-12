@@ -6,6 +6,8 @@
     "@craco/craco": "^6.3.0",
     "@project-serum/anchor": "^0.16.1",
     "@solana/wallet-adapter-base": "^0.6.0",
+    "@solana/wallet-adapter-react": "^0.12.5",
+    "@solana/wallet-adapter-react-ui": "^0.5.1",
     "@solana/wallet-adapter-wallets": "^0.10.0",
     "@solana/web3.js": "^1.29.0",
     "@testing-library/jest-dom": "^5.11.4",
@@ -48,10 +50,10 @@
     ]
   },
   "devDependencies": {
-    "@types/mz": "^2.7.4",
     "@headlessui/react": "^1.4.1",
     "@heroicons/react": "^1.0.4",
     "@types/jest": "^27.0.2",
+    "@types/mz": "^2.7.4",
     "@types/node": "^16.9.6",
     "@types/react": "^17.0.24",
     "@types/react-dom": "^17.0.9",

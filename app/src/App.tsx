@@ -1,8 +1,10 @@
 import { Routes } from './routes';
 import { ReactNode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { ConnectionProvider, WalletProvider } from '@stores';
-import { ClusterSwitcher, WalletConnector } from '@components';
+import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
+import { getPhantomWallet } from '@solana/wallet-adapter-wallets';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { CLUSTERS } from '@core';
 
 const AppHeader = () => {
   return (
@@ -11,8 +13,7 @@ const AppHeader = () => {
         <a href="/">Faktor</a>
       </nav>
       <aside className="flex items-center gap-6">
-        <WalletConnector />
-        <ClusterSwitcher />
+        <WalletMultiButton />
       </aside>
     </header>
   );
@@ -32,13 +33,13 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
 export default function AppWithProviders() {
   return (
     <BrowserRouter>
-      <WalletProvider>
-        <ConnectionProvider>
+      <ConnectionProvider endpoint={CLUSTERS[2].url}>
+        <WalletProvider wallets={[getPhantomWallet()]}>
           <AppLayout>
             <Routes />
           </AppLayout>
-        </ConnectionProvider>
-      </WalletProvider>
+        </WalletProvider>
+      </ConnectionProvider>
     </BrowserRouter>
   );
 }
