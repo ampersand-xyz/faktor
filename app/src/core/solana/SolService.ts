@@ -18,10 +18,10 @@ export class SolService {
     }
   }
 
-  async airdrop(address: string) {
+  async airdrop(address: string, amount: number) {
     const pubkey = new PublicKey(address);
     await this.connection
-      .requestAirdrop(pubkey, LAMPORTS_PER_SOL)
+      .requestAirdrop(pubkey, amount * LAMPORTS_PER_SOL)
       .then((signature) => this.connection.confirmTransaction(signature, 'confirmed'));
   }
 }

@@ -14,5 +14,6 @@ module.exports = {
     '@ui/(.*)': '<rootDir>/src/ui/$1',
     '@stores': '<rootDir>/src/stores'
   },
-  testMatch: ['**/?(*.)+(spec|test).+(ts|tsx|js)']
+  testMatch: ['**/?(*.)+(spec|test).+(ts|tsx|js)'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts']
 };

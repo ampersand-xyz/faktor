@@ -1,4 +1,4 @@
-import { Wallet } from '@project-serum/anchor';
+import { Provider, setProvider, Wallet } from '@project-serum/anchor';
 import { Connection } from '@solana/web3.js';
 import { createInvoice } from './createInvoice';
 import { loadInvoices } from './loadInvoices';
@@ -7,8 +7,7 @@ import { Invoice, InvoiceData, InvoicesStore } from './types';
 export class InvoicesManager {
   constructor(
     readonly store: InvoicesStore,
-    private connection: Connection,
-    private wallet: Wallet,
+    private provider: Provider,
     readonly onUpdate: (data: InvoicesStore) => void
   ) {}
 
@@ -26,13 +25,15 @@ export class InvoicesManager {
     onUpdate: (data: InvoicesStore) => void
   ) {
     const invoicesStore = await loadInvoices(connection, wallet);
-    const instance = new InvoicesManager(invoicesStore, connection, wallet, onUpdate);
+    const provider = new Provider(connection, wallet, { preflightCommitment: 'confirmed' });
+    setProvider(provider);
+    const instance = new InvoicesManager(invoicesStore, provider, onUpdate);
     return instance;
   }
 
   async createInvoice(data: InvoiceData): Promise<Invoice> {
     console.log('👋 Creating new invoice: ', data);
-    const invoice = await createInvoice(this.connection, this.wallet, data);
+    const invoice = await createInvoice(this.provider, data);
     console.log(`✅ Successfully issued invoice:`, invoice);
 
     this.store.issued.push(invoice);
