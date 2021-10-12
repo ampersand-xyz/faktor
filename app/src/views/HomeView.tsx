@@ -2,7 +2,7 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { Program, Provider, web3, BN } from "@project-serum/anchor";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import idl from "../idl.json";
 
@@ -19,21 +19,20 @@ export const HomeView = () => {
   const [value, setValue] = useState(null);
   const wallet = useWallet();
 
-  async function getProvider() {
+  const provider = useMemo(() => {
     // Create the provider and return it to the caller
     // Network set to local network for now
     const network = "http://127.0.0.1:8899";
     const connection = new Connection(network, opts.preflightCommitment);
-    const provider = new Provider(connection, wallet, opts);
-    return provider;
-  }
+    return new Provider(connection, wallet, opts);
+  }, []);
+
+  const program = useMemo(() => {
+    return new Program(idl as any, programID, provider);
+  }, [provider]);
 
   async function createInvoice() {
-    const provider = await getProvider();
-
     // Create the program interface combining the idl, program ID, and provider
-    const program = new Program(idl as any, programID, provider);
-
     try {
       const bob = Keypair.generate();
       const charlie = Keypair.generate();
@@ -59,7 +58,7 @@ export const HomeView = () => {
       });
 
       const escrow: any = await program.account.escrow.fetch(escrowAddress);
-      console.log("Account: ", escrow);
+      console.log("Escrow account: ", escrow);
     } catch (err) {
       console.log("Transaction error: ", err);
     }
