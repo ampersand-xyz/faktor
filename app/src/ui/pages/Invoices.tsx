@@ -1,5 +1,5 @@
 import { CashIcon } from '@heroicons/react/solid';
-import { BN, Program, Provider, Wallet, web3 } from '@project-serum/anchor';
+import { BN, Program, Provider, web3 } from '@project-serum/anchor';
 import { AnchorWallet } from '@solana/wallet-adapter-react';
 import { Connection, PublicKey } from '@solana/web3.js';
 import { useEffect, useState } from 'react';
@@ -133,7 +133,7 @@ export const Invoices = ({ wallet }: { wallet: AnchorWallet }) => {
                 <nav className="flex space-x-4" aria-label="Tabs">
                   {tabs.map((tab) => (
                     <a
-                      onClick={(e) => setCurrentTab(tab.name)}
+                      onClick={() => setCurrentTab(tab.name)}
                       key={tab.name}
                       className={classNames(
                         tab.name === currentTab

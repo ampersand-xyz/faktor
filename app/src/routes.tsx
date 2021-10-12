@@ -1,5 +1,5 @@
 import { Home, Invoices } from '@pages';
-import { useAnchorWallet, useWallet } from '@solana/wallet-adapter-react';
+import { useAnchorWallet } from '@solana/wallet-adapter-react';
 
 import { Switch, Route } from 'react-router-dom';
 
