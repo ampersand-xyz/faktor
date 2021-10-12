@@ -3,6 +3,7 @@ import {
   Keypair,
   PublicKey,
   sendAndConfirmTransaction,
+  Signer,
   SystemProgram,
   Transaction
 } from '@solana/web3.js';
@@ -15,7 +16,7 @@ export const createInvoice = async (provider: Provider, data: InvoiceData): Prom
 
   // TODO check if we already have a keypair generated for this wallet,
   // if not, create one, and store it where we can find it by the wallet.
-  const user = Keypair.generate();
+  const user: Signer = Keypair.generate();
 
   const invoicePubkey = await PublicKey.createWithSeed(
     user.publicKey,
@@ -38,6 +39,7 @@ export const createInvoice = async (provider: Provider, data: InvoiceData): Prom
       programId: program.programId
     })
   );
+
   const hash = await sendAndConfirmTransaction(provider.connection, transaction, [user]);
 
   const charlie = Keypair.generate();
