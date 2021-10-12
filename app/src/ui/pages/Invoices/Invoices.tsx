@@ -16,6 +16,8 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
 
+const tabs = [{ name: 'All' }, { name: 'Issuer' }, { name: 'Debtor' }];
+
 export const Invoices = () => {
   const { invoicesManager } = useConnectedApp();
 
