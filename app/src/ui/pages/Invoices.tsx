@@ -1,6 +1,6 @@
 import { CashIcon } from '@heroicons/react/solid';
 import { BN, Program, Provider, web3 } from '@project-serum/anchor';
-import { Connection, PublicKey } from '@solana/web3.js';
+import { Connection, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { useConnectedApp } from '@stores';
 import { useEffect, useState } from 'react';
 
@@ -9,9 +9,6 @@ import idl from '../../idl.json';
 const { SystemProgram, Keypair } = web3;
 
 const programID = new PublicKey(idl.metadata.address);
-
-const bob = Keypair.generate();
-const charlie = Keypair.generate();
 
 const opts: web3.ConfirmOptions = {
   preflightCommitment: 'processed'
@@ -33,9 +30,9 @@ const tabs = [{ name: 'All' }, { name: 'Issuer' }, { name: 'Debtor' }];
 
 export const Invoices = () => {
   const { wallet } = useConnectedApp();
-  const [allInvoices, setAllInvoices] = useState<any[]>([]);
-  const [debtorInvoices, setDebtorInvoices] = useState<any[]>([]);
-  const [issuerInvoices, setIssuerInvoices] = useState<any[]>([]);
+  const [allEscrows, setAllEscrows] = useState<any[]>([]);
+  const [debtorEscrows, setDebtorEscrows] = useState<any[]>([]);
+  const [issuerEscrows, setIssuerEscrows] = useState<any[]>([]);
   const [currentTab, setCurrentTab] = useState('All');
 
   async function getProvider() {
@@ -47,30 +44,60 @@ export const Invoices = () => {
     return provider;
   }
 
-  async function issueInvoice(amount: any) {
+  async function generateAccounts() {
+    const bob = Keypair.generate();
+    const charlie = Keypair.generate();
+    const dave = Keypair.generate();
     const provider = await getProvider();
     const program = new Program(idl as any, programID, provider);
+    const [escrowAddress, bump] = await PublicKey.findProgramAddress(
+      [bob.publicKey.toBuffer(), charlie.publicKey.toBuffer()],
+      program.programId
+    );
 
-    const invoice = Keypair.generate();
-    const bnAmount = new BN(amount);
-    const memo = `Please pay me ${amount} SOL!`;
+    await airdrop(bob.publicKey);
+    await airdrop(charlie.publicKey);
+    await airdrop(dave.publicKey);
+    return {
+      bob,
+      charlie,
+      dave,
+      escrow: { publicKey: escrowAddress, bump }
+    };
+  }
+
+  async function airdrop(publicKey: web3.PublicKey) {
+    const provider = await getProvider();
+
+    await provider.connection
+      .requestAirdrop(publicKey, LAMPORTS_PER_SOL)
+      .then((sig) => provider.connection.confirmTransaction(sig, 'confirmed'));
+  }
+
+  async function issueDebt(amount: number) {
+    const accounts = await generateAccounts();
+    const escrow = Keypair.generate();
+    const provider = await getProvider();
+    const program = new Program(idl as any, programID, provider);
+    const memo = `Yo, pay me ${amount} SOL!`;
+
+    console.log(accounts);
+    console.log(wallet);
 
     try {
-      // Interact with the program via RPC
-      await program.rpc.issueInvoice(bnAmount, memo, {
+      await program.rpc.issue(accounts.escrow.bump, new BN(amount), memo, {
         accounts: {
-          invoice: invoice.publicKey,
+          escrow: escrow.publicKey,
           issuer: provider.wallet.publicKey,
-          debtor: bob.publicKey,
-          collector: charlie.publicKey,
+          debtor: accounts.bob.publicKey,
+          creditor: accounts.charlie.publicKey,
           systemProgram: SystemProgram.programId
         },
-        signers: [invoice]
+        signers: [escrow]
       });
 
-      const issuedInvoice = await program.account.invoice.fetch(invoice.publicKey);
-      console.log(issuedInvoice);
-      return issuedInvoice;
+      const issuedEscrow = await program.account.escrow.fetch(accounts.escrow.publicKey);
+      return issuedEscrow;
     } catch (err) {
       console.log('Error Issuing Invoice: ', err);
     }
@@ -79,26 +106,36 @@ export const Invoices = () => {
   async function getInvoices() {
     const provider = await getProvider();
     const program = new Program(idl as any, programID, provider);
-    const allInvoices: any = await program.account.invoice.all();
-    setAllInvoices(allInvoices);
-    setDebtorInvoices(
+    const allInvoices: any = await program.account.escrow.all();
+    setAllEscrows(allInvoices);
+    setDebtorEscrows(
       allInvoices.filter(
         (inv: any) => inv.account.debtor.toString() === wallet.publicKey.toString()
       )
     );
-    setIssuerInvoices(
+    setIssuerEscrows(
       allInvoices.filter(
         (inv: any) => inv.account.issuer.toString() === wallet.publicKey.toString()
       )
     );
   }
 
+  async function getBalances(accounts: any) {
+    const provider = await getProvider();
+    return {
+      alice: await provider.connection.getBalance(accounts.alice.publicKey),
+      bob: await provider.connection.getBalance(accounts.bob.publicKey),
+      charlie: await provider.connection.getBalance(accounts.charlie.publicKey),
+      escrow: await provider.connection.getBalance(accounts.escrow.address)
+    };
+  }
+
   useEffect(() => {
     // create arbitrary invoice(s)
-    // async function createNewInvoice() {
-    //   await issueInvoice(20);
-    // }
-    // createNewInvoice();
+    async function createNewInvoice() {
+      await issueDebt(20);
+    }
+    createNewInvoice();
     getInvoices();
   }, []);
 
@@ -140,7 +177,6 @@ export const Invoices = () => {
                           : 'text-gray-500 hover:text-gray-700',
                         'px-3 py-2 font-medium text-sm rounded-md cursor-pointer'
                       )}
-                      aria-current={tab.current ? 'page' : undefined}
                     >
                       {tab.name}
                     </a>
@@ -154,11 +190,11 @@ export const Invoices = () => {
                 <div className="flex flex-col mt-2">
                   <div className="min-w-full overflow-hidden overflow-x-auto align-middle shadow sm:rounded-lg">
                     {currentTab === 'All' ? (
-                      <InvoiceTable invoices={allInvoices} />
+                      <InvoiceTable escrows={allEscrows} />
                     ) : currentTab === 'Issuer' ? (
-                      <InvoiceTable invoices={issuerInvoices} />
+                      <InvoiceTable escrows={issuerEscrows} />
                     ) : (
-                      <InvoiceTable invoices={debtorInvoices} />
+                      <InvoiceTable escrows={debtorEscrows} />
                     )}
                   </div>
                 </div>
@@ -171,10 +207,10 @@ export const Invoices = () => {
   );
 };
 
-const InvoiceTable = ({ invoices }: { invoices: any }) => {
+const InvoiceTable = ({ escrows }: { escrows: any }) => {
   return (
     <>
-      {invoices.length > 1 ? (
+      {escrows.length > 1 ? (
         <>
           <table className="min-w-full divide-y divide-gray-200">
             <thead>
@@ -197,10 +233,10 @@ const InvoiceTable = ({ invoices }: { invoices: any }) => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {invoices.map((invoice: any, i: number) => {
-                const status = Object.keys(invoice.account.status)[0] as keyof typeof statusStyles;
+              {(escrows ?? []).map((escrow: any, i: number) => {
+                // console.log(escrow);
 
-                const pubKey = invoice.publicKey.toString();
+                const pubKey = escrow.publicKey.toString();
 
                 return (
                   <tr key={i} className="bg-white">
@@ -218,12 +254,12 @@ const InvoiceTable = ({ invoices }: { invoices: any }) => {
                       </div>
                     </td>
                     <td className="hidden px-6 py-4 text-sm text-gray-500 whitespace-nowrap md:block">
-                      <span>{invoice.account.memo}</span>
+                      <span>{escrow.account.memo}</span>
                     </td>
                     <td className="px-6 py-4 text-sm text-right text-gray-500 whitespace-nowrap">
                       <div className="flex space-x-2">
                         <span className="font-medium text-gray-900">
-                          {invoice.account.remainingDebt.words[0]}
+                          {/* {escrow.account.remainingDebt.words[0]} */}
                         </span>
                         <div className="flex items-center">
                           SOL
@@ -289,7 +325,7 @@ const InvoiceTable = ({ invoices }: { invoices: any }) => {
                         </div>
                       </div>
                     </td>
-                    <td className="hidden px-6 py-4 text-sm text-gray-500 whitespace-nowrap md:block">
+                    {/* <td className="hidden px-6 py-4 text-sm text-gray-500 whitespace-nowrap md:block">
                       <span
                         className={classNames(
                           statusStyles[status],
@@ -298,11 +334,11 @@ const InvoiceTable = ({ invoices }: { invoices: any }) => {
                       >
                         {status}
                       </span>
-                    </td>
+                    </td> */}
                     {/* <td className="px-6 py-4 text-sm text-right text-gray-500 whitespace-nowrap">
                         <time dateTime={transaction.datetime}>
                           {transaction.date}
-                        </time> 
+                        </time>
                       </td>*/}
                   </tr>
                 );
