@@ -3,12 +3,12 @@
   "name": "faktor",
   "instructions": [
     {
-      "name": "issueInvoice",
+      "name": "issue",
       "accounts": [
         {
-          "name": "invoice",
+          "name": "escrow",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "issuer",
@@ -21,7 +21,7 @@
           "isSigner": false
         },
         {
-          "name": "collector",
+          "name": "creditor",
           "isMut": false,
           "isSigner": false
         },
@@ -33,7 +33,11 @@
       ],
       "args": [
         {
-          "name": "amount",
+          "name": "bump",
+          "type": "u8"
+        },
+        {
+          "name": "balance",
           "type": "u64"
         },
         {
@@ -43,22 +47,27 @@
       ]
     },
     {
-      "name": "payInvoice",
+      "name": "pay",
       "accounts": [
         {
-          "name": "invoice",
+          "name": "escrow",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "collector",
-          "isMut": true,
+          "name": "issuer",
+          "isMut": false,
           "isSigner": false
         },
         {
           "name": "debtor",
           "isMut": true,
           "isSigner": true
+        },
+        {
+          "name": "creditor",
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "systemProgram",
@@ -74,46 +83,40 @@
       ]
     },
     {
-      "name": "rejectInvoice",
+      "name": "collect",
       "accounts": [
         {
-          "name": "invoice",
+          "name": "escrow",
           "isMut": true,
           "isSigner": false
         },
         {
+          "name": "issuer",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "debtor",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "creditor",
           "isMut": true,
           "isSigner": true
         }
       ],
       "args": [
         {
-          "name": "isSpam",
-          "type": "bool"
+          "name": "amount",
+          "type": "u64"
         }
       ]
-    },
-    {
-      "name": "voidInvoice",
-      "accounts": [
-        {
-          "name": "invoice",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "issuer",
-          "isMut": true,
-          "isSigner": true
-        }
-      ],
-      "args": []
     }
   ],
   "accounts": [
     {
-      "name": "Invoice",
+      "name": "Escrow",
       "type": {
         "kind": "struct",
         "fields": [
@@ -126,19 +129,15 @@
             "type": "publicKey"
           },
           {
-            "name": "collector",
+            "name": "creditor",
             "type": "publicKey"
           },
           {
-            "name": "initialDebt",
+            "name": "debits",
             "type": "u64"
           },
           {
-            "name": "paidDebt",
-            "type": "u64"
-          },
-          {
-            "name": "remainingDebt",
+            "name": "credits",
             "type": "u64"
           },
           {
@@ -146,35 +145,8 @@
             "type": "string"
           },
           {
-            "name": "status",
-            "type": {
-              "defined": "InvoiceStatus"
-            }
-          }
-        ]
-      }
-    }
-  ],
-  "types": [
-    {
-      "name": "InvoiceStatus",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Open"
-          },
-          {
-            "name": "Paid"
-          },
-          {
-            "name": "Rejected"
-          },
-          {
-            "name": "Spam"
-          },
-          {
-            "name": "Void"
+            "name": "bump",
+            "type": "u8"
           }
         ]
       }
@@ -188,8 +160,8 @@
     },
     {
       "code": 301,
-      "name": "InvoiceNotOpen",
-      "msg": "This invoice is not open"
+      "name": "SomethingHappened",
+      "msg": "Something happened"
     }
   ],
   "metadata": {

@@ -1,34 +1,82 @@
 import { Idl } from '@project-serum/anchor';
 
-interface IdlConfig extends Omit<Required<Idl>, 'events' | 'state'> {
+interface IdlConfig extends Omit<Required<Idl>, 'events' | 'state' | 'types'> {
   metadata: { address: string };
 }
 
 export const IDL: IdlConfig = {
   version: '0.0.0',
-  name: 'faktor',
+  name: 'solstream',
   instructions: [
     {
-      name: 'issueInvoice',
+      name: 'createStream',
       accounts: [
         {
-          name: 'invoice',
+          name: 'stream',
+          isMut: true,
+          isSigner: false
+        },
+        {
+          name: 'sender',
           isMut: true,
           isSigner: true
         },
         {
-          name: 'issuer',
+          name: 'receiver',
           isMut: true,
-          isSigner: true
+          isSigner: false
         },
         {
-          name: 'debtor',
+          name: 'systemProgram',
           isMut: false,
           isSigner: false
         },
         {
-          name: 'collector',
+          name: 'clock',
           isMut: false,
+          isSigner: false
+        },
+        {
+          name: 'rent',
+          isMut: false,
+          isSigner: false
+        }
+      ],
+      args: [
+        {
+          name: 'amount',
+          type: 'u64'
+        },
+        {
+          name: 'interval',
+          type: 'u64'
+        },
+        {
+          name: 'balance',
+          type: 'u64'
+        },
+        {
+          name: 'bump',
+          type: 'u8'
+        }
+      ]
+    },
+    {
+      name: 'fundStream',
+      accounts: [
+        {
+          name: 'stream',
+          isMut: true,
+          isSigner: false
+        },
+        {
+          name: 'sender',
+          isMut: true,
+          isSigner: true
+        },
+        {
+          name: 'receiver',
+          isMut: true,
           isSigner: false
         },
         {
@@ -41,77 +89,46 @@ export const IDL: IdlConfig = {
         {
           name: 'amount',
           type: 'u64'
-        },
-        {
-          name: 'memo',
-          type: 'string'
         }
       ]
     },
     {
-      name: 'payInvoice',
+      name: 'processStream',
       accounts: [
         {
-          name: 'invoice',
+          name: 'stream',
           isMut: true,
           isSigner: false
         },
         {
-          name: 'collector',
-          isMut: true,
-          isSigner: false
-        },
-        {
-          name: 'debtor',
+          name: 'signer',
           isMut: true,
           isSigner: true
+        },
+        {
+          name: 'sender',
+          isMut: true,
+          isSigner: false
+        },
+        {
+          name: 'receiver',
+          isMut: true,
+          isSigner: false
         },
         {
           name: 'systemProgram',
           isMut: false,
           isSigner: false
-        }
-      ],
-      args: [
+        },
         {
-          name: 'amount',
-          type: 'u64'
-        }
-      ]
-    },
-    {
-      name: 'rejectInvoice',
-      accounts: [
-        {
-          name: 'invoice',
-          isMut: true,
+          name: 'clock',
+          isMut: false,
           isSigner: false
         },
         {
-          name: 'debtor',
-          isMut: true,
-          isSigner: true
-        }
-      ],
-      args: [
-        {
-          name: 'isSpam',
-          type: 'bool'
-        }
-      ]
-    },
-    {
-      name: 'voidInvoice',
-      accounts: [
-        {
-          name: 'invoice',
-          isMut: true,
+          name: 'rent',
+          isMut: false,
           isSigner: false
-        },
-        {
-          name: 'issuer',
-          isMut: true,
-          isSigner: true
         }
       ],
       args: []
@@ -119,68 +136,33 @@ export const IDL: IdlConfig = {
   ],
   accounts: [
     {
-      name: 'Invoice',
+      name: 'Stream',
       type: {
         kind: 'struct',
         fields: [
           {
-            name: 'issuer',
+            name: 'sender',
             type: 'publicKey'
           },
           {
-            name: 'debtor',
+            name: 'receiver',
             type: 'publicKey'
           },
           {
-            name: 'collector',
-            type: 'publicKey'
-          },
-          {
-            name: 'initialDebt',
+            name: 'amount',
             type: 'u64'
           },
           {
-            name: 'paidDebt',
+            name: 'interval',
             type: 'u64'
           },
           {
-            name: 'remainingDebt',
-            type: 'u64'
+            name: 'timestamp',
+            type: 'i64'
           },
           {
-            name: 'memo',
-            type: 'string'
-          },
-          {
-            name: 'status',
-            type: {
-              defined: 'InvoiceStatus'
-            }
-          }
-        ]
-      }
-    }
-  ],
-  types: [
-    {
-      name: 'InvoiceStatus',
-      type: {
-        kind: 'enum',
-        variants: [
-          {
-            name: 'Open'
-          },
-          {
-            name: 'Paid'
-          },
-          {
-            name: 'Rejected'
-          },
-          {
-            name: 'Spam'
-          },
-          {
-            name: 'Void'
+            name: 'bump',
+            type: 'u8'
           }
         ]
       }
@@ -191,14 +173,9 @@ export const IDL: IdlConfig = {
       code: 300,
       name: 'NotEnoughSOL',
       msg: 'Not enough SOL'
-    },
-    {
-      code: 301,
-      name: 'InvoiceNotOpen',
-      msg: 'This invoice is not open'
     }
   ],
   metadata: {
-    address: 'ctoeKp85DThYGxzqcrjPd6w2EG1t43uKJJuxiZFzYWv'
+    address: 'ERcZbB9tJd1ghMYydFBEzn5ERGf48jxEBoozxco6D5WF'
   }
 };
