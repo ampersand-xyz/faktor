@@ -1,44 +1,35 @@
-import { Routes } from './routes';
-import { ReactNode } from 'react';
-import { BrowserRouter } from 'react-router-dom';
-import { ConnectionProvider, WalletProvider } from '@stores';
-import { ClusterSwitcher, WalletConnector } from '@components';
+import { getPhantomWallet } from "@solana/wallet-adapter-wallets";
+import {
+  WalletProvider,
+  ConnectionProvider,
+} from "@solana/wallet-adapter-react";
+import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
+import { Routes } from "./routes";
+import { ReactNode } from "react";
 
-const AppHeader = () => {
-  return (
-    <header className="w-screen h-24 py-5 px-8 flex items-center gap-4 justify-between">
-      <nav>
-        <a href="/">Faktor</a>
-      </nav>
-      <aside className="flex items-center gap-6">
-        <WalletConnector />
-        <ClusterSwitcher />
-      </aside>
-    </header>
-  );
-};
+const wallets = [
+  // view list of available wallets at https://github.com/solana-labs/wallet-adapter#wallets
+  getPhantomWallet(),
+];
 
 const AppLayout = ({ children }: { children: ReactNode }) => {
   return (
     <main>
-      <div className="h-screen w-screen relative z-0">
-        <AppHeader />
-        {children}
-      </div>
+      <body className="w-screen h-screen">{children}</body>
     </main>
   );
 };
 
 export default function AppWithProviders() {
   return (
-    <BrowserRouter>
-      <WalletProvider>
-        <ConnectionProvider>
+    <ConnectionProvider endpoint="http://127.0.0.1:8899">
+      <WalletProvider wallets={wallets} autoConnect>
+        <WalletModalProvider>
           <AppLayout>
             <Routes />
           </AppLayout>
-        </ConnectionProvider>
+        </WalletModalProvider>
       </WalletProvider>
-    </BrowserRouter>
+    </ConnectionProvider>
   );
 }
