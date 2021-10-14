@@ -11,8 +11,6 @@ import { useEffect, useMemo, useState } from "react";
 import {SendInvoice} from "src/components";
 import idl from "../idl.json";
 
-
-
 const { SystemProgram, Keypair } = web3;
 
 const programID = new PublicKey(idl.metadata.address);

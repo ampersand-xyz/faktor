@@ -7,7 +7,6 @@ export const issueInvoice = async (
   provider: Provider,
   data: InvoiceData,
 ): Promise<Invoice> => {
-
   const balance = new BN(data.amount);
   const debtorPublicKey = new PublicKey(data.debtor);
 
@@ -18,7 +17,6 @@ export const issueInvoice = async (
     address: invoiceAddress,
     bump
   }
-
   
   try {
     await program.rpc.issue(invoice.bump, balance, data.memo, {
