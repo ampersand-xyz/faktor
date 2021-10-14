@@ -139,12 +139,12 @@ export const InvoicesView: React.FC<InvoicesViewProps> = ({ wallet }) => {
         <main className="relative z-0 flex-1 pb-8 overflow-y-auto">
           {/* Page header */}
           <div className="mt-8">
-    <div className="flex justify-between items-center px-4 sm:px-6 lg:px-8 mt-8">
-      <h2 className="text-center text-lg font-medium leading-6 text-gray-900">Recent activity</h2>
-      <aside>
-        <SendInvoice program={program} provider={provider} />
-      </aside>
-    </div>
+            <div className="flex justify-between items-center px-4 sm:px-6 lg:px-8 mt-8">
+              <h2 className="text-center text-lg font-medium leading-6 text-gray-900">Recent activity</h2>
+              <aside>
+                <SendInvoice program={program} provider={provider} />
+              </aside>
+            </div>
             <div className="max-w-6xl px-8 mx-auto mt-4">
               <div className="sm:hidden">
                 <label htmlFor="tabs" className="sr-only">
