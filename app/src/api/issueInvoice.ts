@@ -2,17 +2,8 @@ import {BN, Program, Provider} from '@project-serum/anchor';
 import {PublicKey,SystemProgram, SYSVAR_CLOCK_PUBKEY} from '@solana/web3.js';
 import {InvoiceData,Invoice,InvoiceStatus} from 'src/types';
 
-export const generateInvoiceAccount = async (walletPubkey: PublicKey, debtorPubkey: PublicKey,  programPubkey: PublicKey) => {
-  const [invoiceAddress, bump] = await PublicKey.findProgramAddress([walletPubkey.toBuffer(), debtorPubkey.toBuffer()], programPubkey);
-  const invoice = {
-    address: invoiceAddress,
-    bump
-  }
-  return invoice
-}
-
 export const issueInvoice = async (
-program: Program,
+  program: Program,
   provider: Provider,
   data: InvoiceData,
 ): Promise<Invoice> => {
@@ -20,7 +11,8 @@ program: Program,
   const balance = new BN(data.amount);
   const debtorPublicKey = new PublicKey(data.debtor);
 
-    const [invoiceAddress, bump] = await PublicKey.findProgramAddress([provider.wallet.publicKey.toBuffer(), debtorPublicKey.toBuffer()], program.programId);
+  console.log(`PROGRAM ID: ${program.programId.toString()}`)
+  const [invoiceAddress, bump] = await PublicKey.findProgramAddress([provider.wallet.publicKey.toBuffer(), debtorPublicKey.toBuffer()], program.programId);
 
   const invoice = {
     address: invoiceAddress,

@@ -3,7 +3,7 @@ cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [programs.localnet]
-faktor = "8BHW97BHkSKUHjTxHd6g7eGRfLxQfmXniEMcAskxQTKi"
+faktor = "ctoeKp85DThYGxzqcrjPd6w2EG1t43uKJJuxiZFzYWv"
 solstream = "7DJcaKq8MFF1CJDtBGA1tUJfdNyjzbmfQYGvBVW3t4fG"
 
 [registry]

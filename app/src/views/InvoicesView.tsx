@@ -62,7 +62,7 @@ export const InvoicesView: React.FC<InvoicesViewProps> = ({ wallet }) => {
   async function generateAccounts() {
     const alice = Keypair.generate();
     // const bob = Keypair.generate();
-    const b58 = "598DeBxA99bamHPhxD8aLfsHJuvqsCsoUcDpM5WjHAXY";
+    const b58 = "6L4fJcx1khkQyVzCAcr2a8Y6LkXHYhMFoXcLrr6244Yn";
     const bob = new web3.PublicKey(b58);
     const [invoiceAddress, bump] = await PublicKey.findProgramAddress(
       [provider.wallet.publicKey.toBuffer(), bob.toBuffer()],
