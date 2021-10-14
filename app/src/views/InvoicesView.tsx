@@ -1,8 +1,9 @@
 import { CashIcon } from "@heroicons/react/solid";
 import { BN, Program, Provider, web3 } from "@project-serum/anchor";
-import { AnchorWallet, useWallet } from "@solana/wallet-adapter-react";
-import { Connection, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { AnchorWallet } from "@solana/wallet-adapter-react";
+import { Connection, PublicKey } from "@solana/web3.js";
 import { useEffect, useMemo, useState } from "react";
+import {SendInvoice} from "src/components";
 
 import idl from "../idl.json";
 
@@ -14,9 +15,21 @@ const opts: web3.ConfirmOptions = {
   preflightCommitment: "processed",
 };
 
+
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
+
+export const InvoicesHeader = () => {
+  return (
+    <div className="flex justify-between items-center px-4 sm:px-6 lg:px-8 mt-8">
+      <h2 className="text-center text-lg font-medium leading-6 text-gray-900">Recent activity</h2>
+      <aside>
+        <SendInvoice />
+      </aside>
+    </div>
+  );
+};
 
 const tabs = [{ name: "All" }, { name: "Issuer" }, { name: "Debtor" }];
 
@@ -107,9 +120,7 @@ export const InvoicesView: React.FC<InvoicesViewProps> = ({ wallet }) => {
         <main className="relative z-0 flex-1 pb-8 overflow-y-auto">
           {/* Page header */}
           <div className="mt-8">
-            <h2 className="max-w-6xl px-4 mx-auto mt-8 text-lg font-medium leading-6 text-gray-900 sm:px-6 lg:px-8">
-              Invoices
-            </h2>
+            <InvoicesHeader />
             <div className="max-w-6xl px-8 mx-auto mt-4">
               <div className="sm:hidden">
                 <label htmlFor="tabs" className="sr-only">
