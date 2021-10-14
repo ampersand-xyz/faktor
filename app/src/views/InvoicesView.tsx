@@ -55,37 +55,6 @@ export const InvoicesView: React.FC<InvoicesViewProps> = ({ wallet }) => {
     return new Program(idl as any, programID, provider);
   }, [provider]);
 
-  async function createInvoice(amount: number) {
-    // Create the program interface combining the idl, program ID, and provider
-    try {
-      const bob = Keypair.generate();
-      const charlie = Keypair.generate();
-      const [escrowAddress, bump] = await PublicKey.findProgramAddress(
-        [
-          provider.wallet.publicKey.toBuffer(),
-          bob.publicKey.toBuffer(),
-          charlie.publicKey.toBuffer(),
-        ],
-        program.programId
-      );
-      const balance = new BN(amount);
-      const memo = `You owe me ${balance} SOL`;
-      await program.rpc.issue(bump, balance, memo, {
-        accounts: {
-          escrow: escrowAddress,
-          issuer: provider.wallet.publicKey,
-          debtor: bob.publicKey,
-          creditor: charlie.publicKey,
-          systemProgram: SystemProgram.programId,
-        },
-      });
-
-      const escrow: any = await program.account.escrow.fetch(escrowAddress);
-      console.log("Escrow account: ", escrow);
-    } catch (err) {
-      console.log("Transaction error: ", err);
-    }
-  }
 
   async function getInvoices() {
     const allInvoices: any = await program.account.escrow.all();
@@ -108,7 +77,7 @@ export const InvoicesView: React.FC<InvoicesViewProps> = ({ wallet }) => {
   useEffect(() => {
     // create arbitrary invoice(s)
     // async function createNewInvoice() {
-    //   await createInvoice(20);
+    //   await issueInvoice(20);
     // }
     // createNewInvoice();
     getInvoices();

@@ -31,7 +31,7 @@ export const HomeView = () => {
     return new Program(idl as any, programID, provider);
   }, [provider]);
 
-  async function createInvoice() {
+  async function issueInvoice() {
     // Create the program interface combining the idl, program ID, and provider
     try {
       const bob = Keypair.generate();
@@ -78,7 +78,7 @@ export const HomeView = () => {
           {!value && (
             <button
               className="px-4 py-3 font-bold text-white bg-blue-500 rounded"
-              onClick={createInvoice}
+              onClick={issueInvoice}
             >
               Create invoice
             </button>

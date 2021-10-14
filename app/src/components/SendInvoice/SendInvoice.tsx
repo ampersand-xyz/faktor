@@ -2,7 +2,7 @@
 
 import {useAnchorWallet, useConnection} from '@solana/wallet-adapter-react';
 import { useState } from 'react';
-import {createInvoice} from 'src/api';
+import {issueInvoice} from 'src/api';
 import {InvoiceData} from 'src/types';
 import {PrimaryAction} from './ActionButtons';
 import { AmountAndRecipientStep } from './AmountAndRecipientStep';
@@ -38,7 +38,7 @@ export const SendInvoice = () => {
     if (!wallet) return
     console.log('Confirmed invoice to send: ', JSON.stringify(data));
 
-    await createInvoice(connection, wallet, data).catch((error) => {
+    await issueInvoice(connection, wallet, data).catch((error) => {
       console.warn('UNHANDLED ERROR -- TODO');
     });
     closeModal();

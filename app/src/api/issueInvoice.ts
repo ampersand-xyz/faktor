@@ -4,7 +4,17 @@ import {Connection,Keypair,PublicKey,SystemProgram} from '@solana/web3.js';
 import {InvoiceData,Invoice,InvoiceStatus} from 'src/types';
 import IDL from '../idl.json'
 
-export const createInvoice = async (
+export const generateInvoiceAccount = async (walletPubkey: PublicKey, debtorPubkey: PublicKey, creditorPubkey: PublicKey, programPubkey: PublicKey) => {
+  const [invoiceAddress, bump] = await PublicKey.findProgramAddress([walletPubkey.toBuffer(), debtorPubkey.toBuffer(), creditorPubkey.toBuffer()], programPubkey);
+  const invoice = {
+    address: invoiceAddress,
+    bump
+  }
+  return invoice
+}
+
+
+export const issueInvoice = async (
   connection: Connection,
   wallet: AnchorWallet,
   data: InvoiceData
@@ -13,22 +23,27 @@ export const createInvoice = async (
 
   const program = new Program(IDL as Idl, IDL.metadata.address, provider);
 
-  const invoice = Keypair.generate();
-  const bnAmount = new BN(data.amount);
+  const escrow = Keypair.generate();
+  const balance = new BN(data.amount);
   const debtorPublicKey = new PublicKey(data.debtor);
+  const issuer = Keypair.generate()
+  const creditor = Keypair.generate()
 
+  const invoice = await generateInvoiceAccount(provider.wallet.publicKey, debtorPublicKey, creditor.publicKey, program.programId)
+  
   try {
-    await program.rpc.issueInvoice(bnAmount, data.memo, {
+    await program.rpc.issue(invoice.bump, balance, data.memo, {
       accounts: {
-        invoice: invoice.publicKey,
+        escrow: escrow.publicKey,
         issuer: provider.wallet.publicKey,
+        creditor: creditor.publicKey,
         debtor: debtorPublicKey,
         systemProgram: SystemProgram.programId
       },
-      signers: [invoice]
+      signers: [issuer]
     });
 
-    const issuedInvoice = await program.account.invoice.fetch(invoice.publicKey);
+    const issuedInvoice = await program.account.invoice.fetch(escrow.publicKey);
     console.log(`\n✅ Success: Issued invoice:`, issuedInvoice, '\n');
     return {
       publicKey: issuedInvoice.publicKey,
