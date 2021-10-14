@@ -1,8 +1,6 @@
-import {BN, Idl, Program, Provider} from '@project-serum/anchor';
-import {AnchorWallet} from '@solana/wallet-adapter-react';
-import {Connection,PublicKey,SystemProgram, SYSVAR_CLOCK_PUBKEY} from '@solana/web3.js';
+import {BN, Program, Provider} from '@project-serum/anchor';
+import {PublicKey,SystemProgram, SYSVAR_CLOCK_PUBKEY} from '@solana/web3.js';
 import {InvoiceData,Invoice,InvoiceStatus} from 'src/types';
-import IDL from '../idl.json'
 
 export const generateInvoiceAccount = async (walletPubkey: PublicKey, debtorPubkey: PublicKey,  programPubkey: PublicKey) => {
   const [invoiceAddress, bump] = await PublicKey.findProgramAddress([walletPubkey.toBuffer(), debtorPubkey.toBuffer()], programPubkey);
@@ -13,19 +11,22 @@ export const generateInvoiceAccount = async (walletPubkey: PublicKey, debtorPubk
   return invoice
 }
 
-
 export const issueInvoice = async (
+program: Program,
   provider: Provider,
   data: InvoiceData,
 ): Promise<Invoice> => {
 
-
-  const program = new Program(IDL as Idl, IDL.metadata.address, provider);
-
   const balance = new BN(data.amount);
   const debtorPublicKey = new PublicKey(data.debtor);
 
-  const invoice = await generateInvoiceAccount(provider.wallet.publicKey, debtorPublicKey, program.programId)
+    const [invoiceAddress, bump] = await PublicKey.findProgramAddress([provider.wallet.publicKey.toBuffer(), debtorPublicKey.toBuffer()], program.programId);
+
+  const invoice = {
+    address: invoiceAddress,
+    bump
+  }
+
   
   try {
     await program.rpc.issue(invoice.bump, balance, data.memo, {

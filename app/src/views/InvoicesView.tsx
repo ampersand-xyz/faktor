@@ -109,7 +109,6 @@ export const InvoicesView: React.FC<InvoicesViewProps> = ({ wallet }) => {
   }
 
   async function getInvoices() {
-    debugger
     const allInvoices: any = await program.account.invoice.all();
     console.log(allInvoices);
     setInvoices({
@@ -145,7 +144,7 @@ export const InvoicesView: React.FC<InvoicesViewProps> = ({ wallet }) => {
     <div className="flex justify-between items-center px-4 sm:px-6 lg:px-8 mt-8">
       <h2 className="text-center text-lg font-medium leading-6 text-gray-900">Recent activity</h2>
       <aside>
-        <SendInvoice provider={provider} />
+        <SendInvoice program={program} provider={provider} />
       </aside>
     </div>
             <div className="max-w-6xl px-8 mx-auto mt-4">

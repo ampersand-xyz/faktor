@@ -1,6 +1,6 @@
 
 
-import {Provider} from '@project-serum/anchor';
+import {Program, Provider} from '@project-serum/anchor';
 import { useAnchorWallet } from '@solana/wallet-adapter-react';
 import { useState } from 'react';
 import {issueInvoice} from 'src/api';
@@ -17,7 +17,7 @@ export enum SendInvoiceSteps {
 
 const initialData = { debtor: '', amount: -1, memo: '' };
 
-export const SendInvoice = ({provider}: {provider: Provider}) => {
+export const SendInvoice = ({provider, program}: {provider: Provider; program: Program}) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [data, setData] = useState<InvoiceData>(initialData);
   const [step, setStep] = useState(SendInvoiceSteps.ChooseRecipientAndAmount);
@@ -38,7 +38,7 @@ export const SendInvoice = ({provider}: {provider: Provider}) => {
     if (!wallet) return
     console.log('Confirmed invoice to send: ', JSON.stringify(data));
 
-    await issueInvoice(provider, data).catch((error) => {
+    await issueInvoice(program, provider, data).catch((error) => {
       console.warn('UNHANDLED ERROR -- TODO');
     });
     closeModal();
