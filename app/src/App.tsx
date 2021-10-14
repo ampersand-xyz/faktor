@@ -16,7 +16,7 @@ const wallets = [
 const AppLayout = ({ children }: { children: ReactNode }) => {
   return (
     <main>
-      <body className="w-screen h-screen">{children}</body>
+      <div className="w-screen h-screen">{children}</div>
     </main>
   );
 };

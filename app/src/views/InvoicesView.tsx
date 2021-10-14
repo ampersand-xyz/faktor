@@ -1,11 +1,17 @@
 import { CashIcon } from "@heroicons/react/solid";
 import { BN, Program, Provider, web3 } from "@project-serum/anchor";
 import { AnchorWallet } from "@solana/wallet-adapter-react";
-import { Connection, PublicKey } from "@solana/web3.js";
+import {
+  Connection,
+  PublicKey,
+  LAMPORTS_PER_SOL,
+  SYSVAR_CLOCK_PUBKEY,
+} from "@solana/web3.js";
 import { useEffect, useMemo, useState } from "react";
 import {SendInvoice} from "src/components";
-
 import idl from "../idl.json";
+
+
 
 const { SystemProgram, Keypair } = web3;
 
@@ -20,27 +26,25 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
-export const InvoicesHeader = () => {
-  return (
-    <div className="flex justify-between items-center px-4 sm:px-6 lg:px-8 mt-8">
-      <h2 className="text-center text-lg font-medium leading-6 text-gray-900">Recent activity</h2>
-      <aside>
-        <SendInvoice />
-      </aside>
-    </div>
-  );
-};
+const tabs = [{ name: "All" }, { name: "Creditor" }, { name: "Debtor" }];
 
-const tabs = [{ name: "All" }, { name: "Issuer" }, { name: "Debtor" }];
+interface IInvoices {
+  all: any[];
+  debtor: any[];
+  creditor: any[];
+}
 
 export interface InvoicesViewProps {
   wallet: AnchorWallet;
 }
 
 export const InvoicesView: React.FC<InvoicesViewProps> = ({ wallet }) => {
-  const [allEscrows, setAllEscrows] = useState<any[]>([]);
-  const [debtorEscrows, setDebtorEscrows] = useState<any[]>([]);
-  const [issuerEscrows, setIssuerEscrows] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<IInvoices>({
+    all: [],
+    debtor: [],
+    creditor: [],
+  });
+
   const [currentTab, setCurrentTab] = useState("All");
 
   const provider = useMemo(() => {
@@ -55,32 +59,81 @@ export const InvoicesView: React.FC<InvoicesViewProps> = ({ wallet }) => {
     return new Program(idl as any, programID, provider);
   }, [provider]);
 
+  async function generateAccounts() {
+    const alice = Keypair.generate();
+    // const bob = Keypair.generate();
+    const b58 = "598DeBxA99bamHPhxD8aLfsHJuvqsCsoUcDpM5WjHAXY";
+    const bob = new web3.PublicKey(b58);
+    const [invoiceAddress, bump] = await PublicKey.findProgramAddress(
+      [provider.wallet.publicKey.toBuffer(), bob.toBuffer()],
+      program.programId
+    );
+    await airdrop(alice.publicKey);
+    await airdrop(bob);
+    return {
+      alice,
+      bob,
+      invoice: { address: invoiceAddress, bump },
+    };
+  }
+
+  async function airdrop(publicKey) {
+    await provider.connection
+      .requestAirdrop(publicKey, LAMPORTS_PER_SOL)
+      .then((sig) => provider.connection.confirmTransaction(sig, "confirmed"));
+  }
+
+  async function createInvoice(amount: number) {
+    const accounts = await generateAccounts();
+    try {
+      const balance = new BN(amount);
+      const memo = `You owe me ${balance} SOL`;
+
+      await program.rpc.issue(accounts.invoice.bump, balance, memo, {
+        accounts: {
+          invoice: accounts.invoice.address,
+          creditor: provider.wallet.publicKey,
+          debtor: accounts.bob,
+          systemProgram: SystemProgram.programId,
+          clock: SYSVAR_CLOCK_PUBKEY,
+        },
+      });
+
+      const invoice: any = await program.account.invoice.fetch(
+        accounts.invoice.address
+      );
+      console.log("Invoice account: ", invoice);
+    } catch (err) {
+      console.log("Transaction error: ", err);
+    }
+  }
 
   async function getInvoices() {
-    const allInvoices: any = await program.account.escrow.all();
-    setAllEscrows(allInvoices);
-    console.log(allInvoices[0]);
-    setDebtorEscrows(
-      allInvoices.filter(
+    debugger
+    const allInvoices: any = await program.account.invoice.all();
+    console.log(allInvoices);
+    setInvoices({
+      all: allInvoices,
+      debtor: allInvoices.filter(
         (inv: any) =>
           inv.account.debtor.toString() === wallet.publicKey.toString()
-      )
-    );
-    setIssuerEscrows(
-      allInvoices.filter(
+      ),
+      creditor: allInvoices.filter(
         (inv: any) =>
-          inv.account.issuer.toString() === wallet.publicKey.toString()
-      )
-    );
+          inv.account.creditor.toString() === wallet.publicKey.toString()
+      ),
+    });
   }
 
   useEffect(() => {
     // create arbitrary invoice(s)
-    // async function createNewInvoice() {
-    //   await issueInvoice(20);
-    // }
+    async function createNewInvoice() {
+      await createInvoice(23.3);
+    }
     // createNewInvoice();
     getInvoices();
+
+    console.log("current wallet:", provider.wallet.publicKey.toString());
   }, []);
 
   return (
@@ -89,7 +142,12 @@ export const InvoicesView: React.FC<InvoicesViewProps> = ({ wallet }) => {
         <main className="relative z-0 flex-1 pb-8 overflow-y-auto">
           {/* Page header */}
           <div className="mt-8">
-            <InvoicesHeader />
+    <div className="flex justify-between items-center px-4 sm:px-6 lg:px-8 mt-8">
+      <h2 className="text-center text-lg font-medium leading-6 text-gray-900">Recent activity</h2>
+      <aside>
+        <SendInvoice provider={provider} />
+      </aside>
+    </div>
             <div className="max-w-6xl px-8 mx-auto mt-4">
               <div className="sm:hidden">
                 <label htmlFor="tabs" className="sr-only">
@@ -132,11 +190,20 @@ export const InvoicesView: React.FC<InvoicesViewProps> = ({ wallet }) => {
                 <div className="flex flex-col mt-2">
                   <div className="min-w-full overflow-hidden overflow-x-auto align-middle shadow sm:rounded-lg">
                     {currentTab === "All" ? (
-                      <InvoiceTable escrows={allEscrows} />
-                    ) : currentTab === "Issuer" ? (
-                      <InvoiceTable escrows={issuerEscrows} />
+                      <InvoiceTable
+                        invoices={invoices.all}
+                        currentTab={currentTab}
+                      />
+                    ) : currentTab === "Creditor" ? (
+                      <InvoiceTable
+                        invoices={invoices.creditor}
+                        currentTab={currentTab}
+                      />
                     ) : (
-                      <InvoiceTable escrows={debtorEscrows} />
+                      <InvoiceTable
+                        invoices={invoices.debtor}
+                        currentTab={currentTab}
+                      />
                     )}
                   </div>
                 </div>
@@ -149,10 +216,16 @@ export const InvoicesView: React.FC<InvoicesViewProps> = ({ wallet }) => {
   );
 };
 
-const InvoiceTable = ({ escrows }: { escrows: any }) => {
+const InvoiceTable = ({
+  invoices,
+  currentTab,
+}: {
+  invoices: any;
+  currentTab: string;
+}) => {
   return (
     <>
-      {escrows.length > 1 ? (
+      {invoices.length > 1 ? (
         <>
           <table className="min-w-full divide-y divide-gray-200">
             <thead>
@@ -166,17 +239,17 @@ const InvoiceTable = ({ escrows }: { escrows: any }) => {
                 <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase bg-gray-50">
                   Amount
                 </th>
-                <th className="hidden px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase bg-gray-50 md:block">
-                  Status
-                </th>
-                {/* <th className="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase bg-gray-50">
-                      Date
-                    </th> */}
+                {currentTab === "Debtor" && (
+                  <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase bg-gray-50">
+                    Date
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {(escrows ?? []).map((escrow: any, i: number) => {
-                const pubKey = escrow.publicKey.toString();
+              {(invoices ?? []).map((invoice: any, i: number) => {
+                const pubKey = invoice.publicKey.toString();
+                const balance = invoice.account.balance.toString();
 
                 return (
                   <tr key={i} className="bg-white">
@@ -197,12 +270,12 @@ const InvoiceTable = ({ escrows }: { escrows: any }) => {
                       </div>
                     </td>
                     <td className="hidden px-6 py-4 text-sm text-gray-500 whitespace-nowrap md:block">
-                      <span>{escrow.account.memo}</span>
+                      <span>{invoice.account.memo}</span>
                     </td>
                     <td className="px-6 py-4 text-sm text-right text-gray-500 whitespace-nowrap">
                       <div className="flex space-x-2">
                         <span className="font-medium text-gray-900">
-                          {/* {escrow.account.remainingDebt.words[0]} */}
+                          {balance}
                         </span>
                         <div className="flex items-center">
                           SOL
@@ -272,21 +345,16 @@ const InvoiceTable = ({ escrows }: { escrows: any }) => {
                         </div>
                       </div>
                     </td>
-                    {/* <td className="hidden px-6 py-4 text-sm text-gray-500 whitespace-nowrap md:block">
-                      <span
-                        className={classNames(
-                          statusStyles[status],
-                          'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize'
-                        )}
-                      >
-                        {status}
-                      </span>
-                    </td> */}
-                    {/* <td className="px-6 py-4 text-sm text-right text-gray-500 whitespace-nowrap">
-                        <time dateTime={transaction.datetime}>
-                          {transaction.date}
-                        </time>
-                      </td>*/}
+                    {currentTab === "Debtor" && (
+                      <td className="px-6 py-4 text-sm text-right text-gray-500 whitespace-nowrap">
+                        <button
+                          type="button"
+                          className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white bg-green-600 border border-transparent rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        >
+                          Pay
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 );
               })}

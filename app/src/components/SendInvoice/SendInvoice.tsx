@@ -1,6 +1,7 @@
 
 
-import {useAnchorWallet, useConnection} from '@solana/wallet-adapter-react';
+import {Provider} from '@project-serum/anchor';
+import { useAnchorWallet } from '@solana/wallet-adapter-react';
 import { useState } from 'react';
 import {issueInvoice} from 'src/api';
 import {InvoiceData} from 'src/types';
@@ -16,12 +17,11 @@ export enum SendInvoiceSteps {
 
 const initialData = { debtor: '', amount: -1, memo: '' };
 
-export const SendInvoice = () => {
+export const SendInvoice = ({provider}: {provider: Provider}) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [data, setData] = useState<InvoiceData>(initialData);
   const [step, setStep] = useState(SendInvoiceSteps.ChooseRecipientAndAmount);
 
-  const {connection} = useConnection()
   const wallet = useAnchorWallet();
 
   const closeModal = () => {
@@ -38,7 +38,7 @@ export const SendInvoice = () => {
     if (!wallet) return
     console.log('Confirmed invoice to send: ', JSON.stringify(data));
 
-    await issueInvoice(connection, wallet, data).catch((error) => {
+    await issueInvoice(provider, data).catch((error) => {
       console.warn('UNHANDLED ERROR -- TODO');
     });
     closeModal();

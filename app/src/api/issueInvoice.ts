@@ -1,11 +1,11 @@
 import {BN, Idl, Program, Provider} from '@project-serum/anchor';
 import {AnchorWallet} from '@solana/wallet-adapter-react';
-import {Connection,Keypair,PublicKey,SystemProgram} from '@solana/web3.js';
+import {Connection,PublicKey,SystemProgram, SYSVAR_CLOCK_PUBKEY} from '@solana/web3.js';
 import {InvoiceData,Invoice,InvoiceStatus} from 'src/types';
 import IDL from '../idl.json'
 
-export const generateInvoiceAccount = async (walletPubkey: PublicKey, debtorPubkey: PublicKey, creditorPubkey: PublicKey, programPubkey: PublicKey) => {
-  const [invoiceAddress, bump] = await PublicKey.findProgramAddress([walletPubkey.toBuffer(), debtorPubkey.toBuffer(), creditorPubkey.toBuffer()], programPubkey);
+export const generateInvoiceAccount = async (walletPubkey: PublicKey, debtorPubkey: PublicKey,  programPubkey: PublicKey) => {
+  const [invoiceAddress, bump] = await PublicKey.findProgramAddress([walletPubkey.toBuffer(), debtorPubkey.toBuffer()], programPubkey);
   const invoice = {
     address: invoiceAddress,
     bump
@@ -15,35 +15,30 @@ export const generateInvoiceAccount = async (walletPubkey: PublicKey, debtorPubk
 
 
 export const issueInvoice = async (
-  connection: Connection,
-  wallet: AnchorWallet,
-  data: InvoiceData
+  provider: Provider,
+  data: InvoiceData,
 ): Promise<Invoice> => {
-  const provider = new Provider(connection, wallet, {preflightCommitment: 'confirmed'})
+
 
   const program = new Program(IDL as Idl, IDL.metadata.address, provider);
 
-  const escrow = Keypair.generate();
   const balance = new BN(data.amount);
   const debtorPublicKey = new PublicKey(data.debtor);
-  const issuer = Keypair.generate()
-  const creditor = Keypair.generate()
 
-  const invoice = await generateInvoiceAccount(provider.wallet.publicKey, debtorPublicKey, creditor.publicKey, program.programId)
+  const invoice = await generateInvoiceAccount(provider.wallet.publicKey, debtorPublicKey, program.programId)
   
   try {
     await program.rpc.issue(invoice.bump, balance, data.memo, {
       accounts: {
-        escrow: escrow.publicKey,
-        issuer: provider.wallet.publicKey,
-        creditor: creditor.publicKey,
+        invoice: invoice.address,
+        creditor: provider.wallet.publicKey,
         debtor: debtorPublicKey,
-        systemProgram: SystemProgram.programId
+        systemProgram: SystemProgram.programId,
+        clock: SYSVAR_CLOCK_PUBKEY
       },
-      signers: [issuer]
     });
 
-    const issuedInvoice = await program.account.invoice.fetch(escrow.publicKey);
+    const issuedInvoice = await program.account.invoice.fetch(invoice.address);
     console.log(`\n✅ Success: Issued invoice:`, issuedInvoice, '\n');
     return {
       publicKey: issuedInvoice.publicKey,
