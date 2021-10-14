@@ -1,228 +1,19 @@
 import { CashIcon } from "@heroicons/react/solid";
-import { BN, Program, Provider, web3 } from "@project-serum/anchor";
-import { AnchorWallet } from "@solana/wallet-adapter-react";
-import {
-  Connection,
-  PublicKey,
-  LAMPORTS_PER_SOL,
-  SYSVAR_CLOCK_PUBKEY,
-} from "@solana/web3.js";
-import { useEffect, useMemo, useState } from "react";
-import {SendInvoice} from "src/components";
-import idl from "../idl.json";
+import { useState } from "react";
+import { PayModal } from "src/components/Pay";
 
-const { SystemProgram, Keypair } = web3;
-
-const programID = new PublicKey(idl.metadata.address);
-
-const opts: web3.ConfirmOptions = {
-  preflightCommitment: "processed",
-};
-
-
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(" ");
-}
-
-const tabs = [{ name: "All" }, { name: "Creditor" }, { name: "Debtor" }];
-
-interface IInvoices {
-  all: any[];
-  debtor: any[];
-  creditor: any[];
-}
-
-export interface InvoicesViewProps {
-  wallet: AnchorWallet;
-}
-
-export const InvoicesView: React.FC<InvoicesViewProps> = ({ wallet }) => {
-  const [invoices, setInvoices] = useState<IInvoices>({
-    all: [],
-    debtor: [],
-    creditor: [],
-  });
-
-  const [currentTab, setCurrentTab] = useState("All");
-
-  const provider = useMemo(() => {
-    // Create the provider and return it to the caller
-    // Network set to local network for now
-    const network = "http://127.0.0.1:8899";
-    const connection = new Connection(network, opts.preflightCommitment);
-    return new Provider(connection, wallet, opts);
-  }, []);
-
-  const program = useMemo(() => {
-    return new Program(idl as any, programID, provider);
-  }, [provider]);
-
-  async function generateAccounts() {
-    const alice = Keypair.generate();
-    // const bob = Keypair.generate();
-    const b58 = "6L4fJcx1khkQyVzCAcr2a8Y6LkXHYhMFoXcLrr6244Yn";
-    const bob = new web3.PublicKey(b58);
-    const [invoiceAddress, bump] = await PublicKey.findProgramAddress(
-      [provider.wallet.publicKey.toBuffer(), bob.toBuffer()],
-      program.programId
-    );
-    await airdrop(alice.publicKey);
-    await airdrop(bob);
-    return {
-      alice,
-      bob,
-      invoice: { address: invoiceAddress, bump },
-    };
-  }
-
-  async function airdrop(publicKey) {
-    await provider.connection
-      .requestAirdrop(publicKey, LAMPORTS_PER_SOL)
-      .then((sig) => provider.connection.confirmTransaction(sig, "confirmed"));
-  }
-
-  async function createInvoice(amount: number) {
-    const accounts = await generateAccounts();
-    try {
-      const balance = new BN(amount);
-      const memo = `You owe me ${balance} SOL`;
-
-      await program.rpc.issue(accounts.invoice.bump, balance, memo, {
-        accounts: {
-          invoice: accounts.invoice.address,
-          creditor: provider.wallet.publicKey,
-          debtor: accounts.bob,
-          systemProgram: SystemProgram.programId,
-          clock: SYSVAR_CLOCK_PUBKEY,
-        },
-      });
-
-      const invoice: any = await program.account.invoice.fetch(
-        accounts.invoice.address
-      );
-      console.log("Invoice account: ", invoice);
-    } catch (err) {
-      console.log("Transaction error: ", err);
-    }
-  }
-
-  async function getInvoices() {
-    const allInvoices: any = await program.account.invoice.all();
-    console.log(allInvoices);
-    setInvoices({
-      all: allInvoices,
-      debtor: allInvoices.filter(
-        (inv: any) =>
-          inv.account.debtor.toString() === wallet.publicKey.toString()
-      ),
-      creditor: allInvoices.filter(
-        (inv: any) =>
-          inv.account.creditor.toString() === wallet.publicKey.toString()
-      ),
-    });
-  }
-
-  useEffect(() => {
-    // create arbitrary invoice(s)
-    async function createNewInvoice() {
-      await createInvoice(23.3);
-    }
-    // createNewInvoice();
-    getInvoices();
-
-    console.log("current wallet:", provider.wallet.publicKey.toString());
-  }, []);
-
-  return (
-    <div className="relative flex h-screen overflow-hidden bg-gray-100">
-      <div className="flex-1 overflow-auto focus:outline-none">
-        <main className="relative z-0 flex-1 pb-8 overflow-y-auto">
-          {/* Page header */}
-          <div className="mt-8">
-            <div className="flex justify-between items-center px-4 sm:px-6 lg:px-8 mt-8">
-              <h2 className="text-center text-lg font-medium leading-6 text-gray-900">Recent activity</h2>
-              <aside>
-                <SendInvoice program={program} provider={provider} />
-              </aside>
-            </div>
-            <div className="max-w-6xl px-8 mx-auto mt-4">
-              <div className="sm:hidden">
-                <label htmlFor="tabs" className="sr-only">
-                  Select a tab
-                </label>
-                {/* Use an "onChange" listener to redirect the user to the selected tab URL. */}
-                <select
-                  id="tabs"
-                  name="tabs"
-                  className="block w-full border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                  // defaultValue={tabs.find((tab) => tab.current).name}
-                >
-                  {tabs.map((tab) => (
-                    <option key={tab.name}>{tab.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="hidden sm:block">
-                <nav className="flex space-x-4" aria-label="Tabs">
-                  {tabs.map((tab) => (
-                    <a
-                      onClick={(e) => setCurrentTab(tab.name)}
-                      key={tab.name}
-                      className={classNames(
-                        tab.name === currentTab
-                          ? "bg-blue-100 text-blue-700"
-                          : "text-gray-500 hover:text-gray-700",
-                        "px-3 py-2 font-medium text-sm rounded-md cursor-pointer"
-                      )}
-                    >
-                      {tab.name}
-                    </a>
-                  ))}
-                </nav>
-              </div>
-            </div>
-            {/* Activity table (small breakpoint and up) */}
-            <div className="hidden sm:block">
-              <div className="max-w-6xl px-4 mx-auto sm:px-6 lg:px-8">
-                <div className="flex flex-col mt-2">
-                  <div className="min-w-full overflow-hidden overflow-x-auto align-middle shadow sm:rounded-lg">
-                    {currentTab === "All" ? (
-                      <InvoiceTable
-                        invoices={invoices.all}
-                        currentTab={currentTab}
-                      />
-                    ) : currentTab === "Creditor" ? (
-                      <InvoiceTable
-                        invoices={invoices.creditor}
-                        currentTab={currentTab}
-                      />
-                    ) : (
-                      <InvoiceTable
-                        invoices={invoices.debtor}
-                        currentTab={currentTab}
-                      />
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </main>
-      </div>
-    </div>
-  );
-};
-
-const InvoiceTable = ({
+export const InvoiceTable = ({
   invoices,
   currentTab,
 }: {
   invoices: any;
   currentTab: string;
 }) => {
+  const [isPayModalOpen, setIsPayModalOpen] = useState(false);
+  const [currentInvoice, setCurrentInvoice] = useState<any>();
   return (
     <>
-      {invoices.length > 1 ? (
+      {invoices.length > 0 ? (
         <>
           <table className="min-w-full divide-y divide-gray-200">
             <thead>
@@ -266,7 +57,7 @@ const InvoiceTable = ({
                         </a>
                       </div>
                     </td>
-                    <td className="hidden px-6 py-4 text-sm text-gray-500 whitespace-nowrap md:block">
+                    <td className="px-6 py-4 text-sm text-right text-gray-500 whitespace-nowrap">
                       <span>{invoice.account.memo}</span>
                     </td>
                     <td className="px-6 py-4 text-sm text-right text-gray-500 whitespace-nowrap">
@@ -345,6 +136,10 @@ const InvoiceTable = ({
                     {currentTab === "Debtor" && (
                       <td className="px-6 py-4 text-sm text-right text-gray-500 whitespace-nowrap">
                         <button
+                          onClick={() => {
+                            setIsPayModalOpen(true);
+                            setCurrentInvoice(invoice);
+                          }}
                           type="button"
                           className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white bg-green-600 border border-transparent rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                         >
@@ -389,6 +184,13 @@ const InvoiceTable = ({
             </h3>
           </div>
         </div>
+      )}
+      {currentInvoice && (
+        <PayModal
+          invoice={currentInvoice}
+          open={isPayModalOpen}
+          setOpen={setIsPayModalOpen}
+        />
       )}
     </>
   );

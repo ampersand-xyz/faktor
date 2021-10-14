@@ -1,2 +1,3 @@
 export * from "./HomeView";
-export * from "./InvoicesView";
+export * from "./Invoices/InvoicesView";
+export * from "./Invoices/InvoiceTable";
