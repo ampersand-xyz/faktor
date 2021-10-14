@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-gray-100: #EDEDED;
+  --color-gray-800: #292929;
+  --color-gray-900: #1F1F1F;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
@@ -9,9 +19,61 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color: white;
+  background-color: var(--color-gray-900);
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+input {
+  outline: none;
+}
+
+/* Change Autocomplete styles in Chrome*/
+input:-webkit-autofill,
+textarea:-webkit-autofill {
+  -webkit-text-fill-color: white;
+}
+
+/* Hide up and down buttons for number inputs */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+@layer base {
+  h2 {
+    @apply font-semibold text-2xl leading-6;
+  }
+}
+
+@layer utilities {
+  .anim-duration-3 {
+    animation-duration: 800ms;
+  }
+
+  .anim-delay-1 {
+    animation-delay: 300ms;
+  }
+
+  .anim-delay-2 {
+    animation-delay: 600ms;
+  }
 }
