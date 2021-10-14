@@ -5,10 +5,10 @@ import { useAnchorWallet } from '@solana/wallet-adapter-react';
 import { useState } from 'react';
 import {issueInvoice} from 'src/api';
 import {InvoiceData} from 'src/types';
-import {PrimaryAction} from './ActionButtons';
+import {PrimaryAction} from '../ActionButtons';
 import { AmountAndRecipientStep } from './AmountAndRecipientStep';
 import { ConfirmSendInvoiceStep } from './ConfirmSendInvoiceStep';
-import {Modal} from './Modal';
+import {Modal} from '../Modal';
 
 export enum SendInvoiceSteps {
   ChooseRecipientAndAmount = 0,

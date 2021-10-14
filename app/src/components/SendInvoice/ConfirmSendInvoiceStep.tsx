@@ -1,7 +1,7 @@
 import {InvoiceData} from 'src/types';
 import {SolanaLogo} from '../SolanaLogo';
-import {SecondaryAction,PrimaryAction} from './ActionButtons';
-import {Card} from './Card';
+import {SecondaryAction,PrimaryAction} from '../ActionButtons';
+import {Card} from '../Card';
 
 export interface ConfirmSendInvoiceStepProps {
   data: InvoiceData;

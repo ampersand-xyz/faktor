@@ -1,10 +1,9 @@
 import { useMemo } from 'react';
 import {InvoiceData} from 'src/types';
-import {SecondaryAction,PrimaryAction} from './ActionButtons';
-import {Card} from './Card';
-import {Form} from './Form';
-import {FormFieldProps} from './FormField';
-import {List} from './List';
+import {FormFieldProps,Form} from '../Form';
+import {SecondaryAction,PrimaryAction} from '../ActionButtons';
+import {Card} from '../Card';
+import {List} from '../List';
 
 export const SOL_PRECISION_STEP = '0.000000001';
 
