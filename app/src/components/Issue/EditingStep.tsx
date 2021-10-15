@@ -1,8 +1,9 @@
 import {useEffect,useState} from "react";
 import {SecondaryAction,PrimaryAction} from "../ActionButtons";
-import {IssueInvoiceRequest} from "src/api";
+import {checkWalletAddressExists, IssueInvoiceRequest} from "src/api";
 import {InputField} from "../InputField";
 import {PublicKey} from "@solana/web3.js";
+import {useConnection} from "@solana/wallet-adapter-react";
 
 export interface EditingStepProps {
   request: IssueInvoiceRequest;
@@ -15,11 +16,15 @@ export const EditingStep: React.FC<EditingStepProps>=({
   onCancel,
   onSubmit,
 }) => {
-  const [isSubmitEnabled,setIsSubmitEnabled]=useState(false);
+  const [isSubmitEnabled, setIsSubmitEnabled] = useState(false);
 
-  const [debtor,setDebtor]=useState(request.debtor?.toString()??"");
-  const [balance,setBalance]=useState(request.balance?.toString()??"");
-  const [memo,setMemo]=useState(request.memo?.toString()??"");
+  const [debtor, setDebtor] = useState(request.debtor?.toString()??"");
+  const [debtorError, setDebtorError] = useState('');
+
+  const [balance, setBalance] = useState(request.balance?.toString()??"");
+  const [memo, setMemo] = useState(request.memo?.toString()??"");
+
+  const { connection } = useConnection()
 
   const _onSubmit=() => {
     onSubmit({
@@ -32,7 +37,18 @@ export const EditingStep: React.FC<EditingStepProps>=({
   useEffect(() => {
     // TODO input validation (valid address, non-negative balance, etc.)
     setIsSubmitEnabled(debtor!==""&&balance!==""&&memo!=="");
-  },[debtor,balance,memo]);
+  } , [debtor,balance,memo]);
+
+  useEffect(() => {
+    if (debtor) {
+      setDebtorError('')
+      checkWalletAddressExists(connection,debtor).then((res) => {
+        if(!res) {
+          setDebtorError('Not a valid SOL address.')
+        }
+      })
+    }
+  } , [debtor])
 
   return (
     <form onSubmit={_onSubmit} className="w-full">
@@ -41,6 +57,7 @@ export const EditingStep: React.FC<EditingStepProps>=({
         <InputField
           type="text"
           placeholder="Debtor's SOL Address"
+          error={debtorError}
           value={debtor}
           onChange={(v) => setDebtor(v)}
         />
