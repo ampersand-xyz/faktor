@@ -6,7 +6,7 @@ import {
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import { Routes } from "./routes";
 import { ReactNode } from "react";
-import {BrowserRouter} from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 
 const wallets = [
   // view list of available wallets at https://github.com/solana-labs/wallet-adapter#wallets
