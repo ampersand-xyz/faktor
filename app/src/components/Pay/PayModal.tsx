@@ -1,22 +1,69 @@
 import { Dialog, Transition } from "@headlessui/react";
+import { useAnchorWallet } from "@solana/wallet-adapter-react";
 import { Fragment, useState } from "react";
+import { payInvoice, PayInvoiceRequest } from "src/api/payInvoice";
+import { ConfirmationStep } from "./ConfirmationStep";
+import { EditingStep } from "./EditingStep";
 
+export enum PayInvoiceSteps {
+  Editing = 0,
+  Confirmation = 1,
+}
 interface PayModalProps {
   invoice: any;
-  open: any;
-  setOpen;
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  program: any;
+  provider: any;
 }
 
 export const PayModal: React.FC<PayModalProps> = ({
   invoice,
   open,
   setOpen,
-}: {
-  invoice: any;
-  open: any;
-  setOpen: any;
+  program,
+  provider,
 }) => {
+  const wallet = useAnchorWallet();
+
   const [amount, setAmount] = useState("");
+
+  const [step, setStep] = useState(PayInvoiceSteps.Editing);
+
+  const [request, setRequest] = useState<PayInvoiceRequest | null>({
+    program,
+    invoice,
+    debtor: provider.wallet.publicKey,
+  });
+
+  const onPay = () => {
+    setStep(PayInvoiceSteps.Confirmation);
+    setRequest({
+      amount: parseFloat(amount),
+      ...request,
+    });
+  };
+
+  const onConfirm = async () => {
+    console.log(request);
+    if (!wallet) return;
+    await payInvoice(request)
+      .then(onClose)
+      .catch((error) => {
+        console.warn("Failed to issue invoice: ", error.message);
+      });
+  };
+
+  const onClose = () => {
+    setOpen(false);
+    setStep(PayInvoiceSteps.Editing);
+    setRequest({
+      debtor: provider.wallet.publicKey,
+      program,
+      invoice,
+    });
+  };
+
   const pubKey = invoice.publicKey.toString();
   const balance = invoice.account.balance.toString();
   const note = invoice.account.memo;
@@ -141,103 +188,22 @@ export const PayModal: React.FC<PayModalProps> = ({
                     <p className="text-lg text-gray-500">Note: {note}</p>
                   </div>
                 </div>
-                <div className="py-8 pl-8 text-left">
-                  <div>
-                    <label
-                      htmlFor="price"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Amount
-                    </label>
-                    <div className="flex items-center">
-                      <div className="relative mt-1 rounded-md shadow-sm">
-                        <div className="absolute inset-y-0 left-0 flex items-center pl-1 pointer-events-none">
-                          <span className="text-gray-500 sm:text-sm">
-                            <svg
-                              className="w-4 h-4 ml-1"
-                              viewBox="0 0 398 312"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <g clip-path="url(#clip0)">
-                                <path
-                                  d="M64.6 237.9C67 235.5 70.3 234.1 73.8 234.1H391.2C397 234.1 399.9 241.1 395.8 245.2L333.1 307.9C330.7 310.3 327.4 311.7 323.9 311.7H6.5C0.700001 311.7 -2.2 304.7 1.9 300.6L64.6 237.9Z"
-                                  fill="url(#paint0_linear)"
-                                />
-                                <path
-                                  d="M64.6 3.8C67.1 1.4 70.4 0 73.8 0H391.2C397 0 399.9 7 395.8 11.1L333.1 73.8C330.7 76.2 327.4 77.6 323.9 77.6H6.5C0.700001 77.6 -2.2 70.6 1.9 66.5L64.6 3.8Z"
-                                  fill="url(#paint1_linear)"
-                                />
-                                <path
-                                  d="M333.1 120.1C330.7 117.7 327.4 116.3 323.9 116.3H6.5C0.700001 116.3 -2.2 123.3 1.9 127.4L64.6 190.1C67 192.5 70.3 193.9 73.8 193.9H391.2C397 193.9 399.9 186.9 395.8 182.8L333.1 120.1Z"
-                                  fill="url(#paint2_linear)"
-                                />
-                              </g>
-                              <defs>
-                                <linearGradient
-                                  id="paint0_linear"
-                                  x1="360.879"
-                                  y1="-37.4553"
-                                  x2="141.213"
-                                  y2="383.294"
-                                  gradientUnits="userSpaceOnUse"
-                                >
-                                  <stop stop-color="#00FFA3" />
-                                  <stop offset="1" stop-color="#DC1FFF" />
-                                </linearGradient>
-                                <linearGradient
-                                  id="paint1_linear"
-                                  x1="264.829"
-                                  y1="-87.6014"
-                                  x2="45.163"
-                                  y2="333.147"
-                                  gradientUnits="userSpaceOnUse"
-                                >
-                                  <stop stop-color="#00FFA3" />
-                                  <stop offset="1" stop-color="#DC1FFF" />
-                                </linearGradient>
-                                <linearGradient
-                                  id="paint2_linear"
-                                  x1="312.548"
-                                  y1="-62.688"
-                                  x2="92.8822"
-                                  y2="358.061"
-                                  gradientUnits="userSpaceOnUse"
-                                >
-                                  <stop stop-color="#00FFA3" />
-                                  <stop offset="1" stop-color="#DC1FFF" />
-                                </linearGradient>
-                                <clipPath id="clip0">
-                                  <rect
-                                    width="397.7"
-                                    height="311.7"
-                                    fill="white"
-                                  />
-                                </clipPath>
-                              </defs>
-                            </svg>
-                          </span>
-                        </div>
-                        <input
-                          type="number"
-                          name="price"
-                          id="price"
-                          className="block w-full pr-12 text-sm text-gray-900 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 pl-7"
-                          placeholder="Enter Amount"
-                          value={amount}
-                          onChange={(e) => setAmount(e.target.value)}
-                        />
-                      </div>
-                      <button
-                        onClick={() => {}}
-                        type="button"
-                        className="inline-flex items-center h-10 px-6 ml-2 text-sm font-medium leading-4 text-white bg-green-600 border border-transparent rounded-md shadow-sm -py-2 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                      >
-                        Pay
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                {step === PayInvoiceSteps.Editing && (
+                  <EditingStep
+                    balance={balance}
+                    amount={amount}
+                    setAmount={setAmount}
+                    onPay={onPay}
+                  />
+                )}
+                {step === PayInvoiceSteps.Confirmation && (
+                  <ConfirmationStep
+                    balance={balance}
+                    amount={amount}
+                    onBack={() => setStep(step - 1)}
+                    onConfirm={onConfirm}
+                  />
+                )}
               </div>
             </div>
           </Transition.Child>

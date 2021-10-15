@@ -122,6 +122,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
               <InvoiceTable
                 invoices={visibleInvoices}
                 currentTab={currentTab}
+                program={program}
+                provider={provider}
               />
             </div>
           </div>

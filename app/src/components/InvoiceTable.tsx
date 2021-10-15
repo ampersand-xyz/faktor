@@ -5,9 +5,13 @@ import { PayModal } from "src/components/Pay";
 export const InvoiceTable = ({
   invoices,
   currentTab,
+  program,
+  provider,
 }: {
   invoices: any;
   currentTab: string;
+  program: any;
+  provider: any;
 }) => {
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
   const [currentInvoice, setCurrentInvoice] = useState<any>();
@@ -190,6 +194,8 @@ export const InvoiceTable = ({
           invoice={currentInvoice}
           open={isPayModalOpen}
           setOpen={setIsPayModalOpen}
+          program={program}
+          provider={provider}
         />
       )}
     </>
