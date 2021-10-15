@@ -32,7 +32,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
 
   const [currentTab, setCurrentTab] = useState("All");
   const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const visibleInvoices = useMemo(() => {
     switch (currentTab) {
@@ -56,12 +56,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
   }, [provider]);
 
   useEffect(() => {
-    refreshInvoices();
+    refresh();
   }, []);
 
-  async function refreshInvoices() {
-    console.log('Refreshing invoices...');
-    setRefreshing(true)
+  async function refresh() {
+    setIsRefreshing(true);
     const allInvoices: any = await program.account.invoice.all();
     setInvoices({
       all: allInvoices,
@@ -74,9 +73,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
           inv.account.creditor.toString() === wallet.publicKey.toString()
       ),
     });
-    setRefreshing(false)
+    setIsRefreshing(false);
   }
-
 
   return (
     <>
@@ -111,7 +109,13 @@ export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
               </nav>
               {/* "New Invoice" button */}
               <div className="py-2">
-                <button onClick={refreshInvoices} disabled={refreshing} className="text-gray-600 hover:text-gray-900 font-semibold px-4 py-3 mr-4 hover:bg-gray-200 rounded-md">{refreshing? 'Refreshing...': 'Refresh'}</button>
+                <button
+                  onClick={refresh}
+                  disabled={isRefreshing}
+                  className="px-4 py-3 mr-4 font-semibold text-gray-600 rounded-md hover:text-gray-900 hover:bg-gray-200"
+                >
+                  {isRefreshing ? "Refreshing..." : "Refresh"}
+                </button>
                 <button
                   onClick={() => {
                     setIsIssueModalOpen(true);
@@ -137,7 +141,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
         open={isIssueModalOpen}
         setOpen={setIsIssueModalOpen}
         program={program}
-        onIssued={refreshInvoices}
+        refresh={refresh}
         provider={provider}
       />
     </>
