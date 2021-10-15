@@ -2,8 +2,9 @@ import { Program, Provider, web3 } from "@project-serum/anchor";
 import { AnchorWallet } from "@solana/wallet-adapter-react";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { useEffect, useMemo, useState } from "react";
-import { IssueModal, InvoiceTable } from "src/components";
+import { IssueModal } from "src/components";
 import idl from "../idl.json";
+import { InvoiceTable } from "./Invoices/InvoiceTable";
 
 const programID = new PublicKey(idl.metadata.address);
 
@@ -124,6 +125,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
               <InvoiceTable
                 invoices={visibleInvoices}
                 currentTab={currentTab}
+                program={program}
+                provider={provider}
               />
             </div>
           </div>
