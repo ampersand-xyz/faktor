@@ -1,12 +1,10 @@
-import { FormEventHandler } from "react";
-
-export interface InputFieldProps
-  extends React.HTMLAttributes<HTMLInputElement> {
+export interface InputFieldProps {
   type?: string;
   value?: string;
-  onChange?: (string) => void;
+  onChange?: (val: string) => void;
   label?: string;
   placeholder?: string;
+  error?: string;
   labelClassName?: string;
   inputClassName?: string;
   autoComplete?: string;
@@ -14,29 +12,34 @@ export interface InputFieldProps
   step?: string;
 }
 
-export const InputField: React.FC<InputFieldProps> = ({
+export const InputField: React.FC<InputFieldProps>=({
   value,
   onChange,
-  type = "text",
+  type="text",
   label,
   placeholder,
-  labelClassName = "text-gray-500 font-medium mb-2",
-  inputClassName = "h-12 text-lg w-full text-black placeholder-gray-400 border border-gray-200 rounded-md px-3 py-2",
-  autoComplete = "off",
+  error,
+  labelClassName="",
+  inputClassName="",
+  autoComplete="off",
 }) => {
-  const _onChange = (e) => {
+
+
+
+  const _onChange=(e) => {
     onChange(e.target.value);
   };
 
   return (
-    <div className={`flex flex-col`}>
-      {label && <label className={labelClassName}>{label}</label>}
+    <div className={`flex flex-col leading-tight`}>
+      {label&&<label className={`text-gray-500 font-medium mb-2 ${labelClassName}`}>{label}</label>}
       <input
-        {...{ value, placeholder, autoComplete, type }}
-        className={inputClassName}
+        {...{value,placeholder,autoComplete,type}}
+        className={`h-12 text-lg w-full text-black placeholder-gray-400 bg-white border ${error? 'border-red-600':`border-gray-100`} rounded-md px-3 py-2 ${inputClassName}`}
         onChange={_onChange}
         required
       />
+      {error&&<p className="text-red-600 text-base">{error}</p>}
     </div>
   );
 };
