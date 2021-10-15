@@ -27,6 +27,9 @@ module.exports = {
       },
     },
     extend: {
+      backgroundColor: {
+        lightest: '#E5E5E5'
+      },
       minWidth: {
         card: "32rem",
       },

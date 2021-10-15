@@ -36,7 +36,7 @@ export const EditingStep: React.FC<EditingStepProps>=({
 
   return (
     <form onSubmit={_onSubmit} className="w-full">
-      <h1 className="text-3xl font-semibold text-black">New invoice</h1>
+      <h1 className="text-modal-title">New invoice</h1>
       <div className="flex flex-col mt-8 space-y-4">
         <InputField
           type="text"

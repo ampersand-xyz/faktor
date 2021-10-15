@@ -68,5 +68,9 @@ input[type=number] {
   .bg-gradient-primary {
      background: linear-gradient(128.32deg, rgba(245, 0, 162, 0.2) 24.33%, rgba(112, 45, 255, 0) 81.84%), #3733FF;
   }
+
+  .text-modal-title {
+    @apply text-3xl font-medium text-gray-900;
+  }
 }
 
