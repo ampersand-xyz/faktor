@@ -40,22 +40,18 @@ export const EditingStep: React.FC<EditingStepProps>=({
       <div className="flex flex-col mt-8 space-y-4">
         <InputField
           type="text"
-          label="Debtor"
-          placeholder="Public key"
+          placeholder="Debtor's SOL Address"
           value={debtor}
           onChange={(v) => setDebtor(v)}
         />
         <InputField
           type="number"
-          label="Balance (SOL)"
-          placeholder="10"
-          value={balance}
+          placeholder="Balance (SOL)"
           onChange={(v) => setBalance(v)}
         />
         <InputField
           type="text"
-          label="Memo"
-          placeholder="For dinner"
+          placeholder="Add note"
           value={memo}
           onChange={(v) => setMemo(v)}
         />

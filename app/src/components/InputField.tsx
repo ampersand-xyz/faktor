@@ -29,11 +29,11 @@ export const InputField: React.FC<InputFieldProps>=({
   };
 
   return (
-    <div className={`flex flex-col`}>
+    <div className={`flex flex-col leading-tight`}>
       {label&&<label className={`text-gray-500 font-medium mb-2 ${labelClassName}`}>{label}</label>}
       <input
         {...{value,placeholder,autoComplete,type}}
-        className={`h-12 text-lg w-full text-black placeholder-gray-400 border border-gray-200 rounded-md px-3 py-2 ${inputClassName}`}
+        className={`h-12 text-lg w-full text-black placeholder-gray-400 bg-white border border-gray-100 rounded-md px-3 py-2 ${inputClassName}`}
         onChange={_onChange}
         required
       />
