@@ -1,16 +1,13 @@
 use {
     anchor_lang::{
         prelude::*,
-        solana_program::{
-            program::invoke, 
-            system_instruction, 
-            system_program,
-        },
+        solana_program::{program::invoke, system_instruction, system_program},
+        AnchorSerialize,
     },
-    std::cmp::min,
+    std::{clone::Clone, cmp::min},
 };
 
-declare_id!("EjC5useGgkZTCpg6a75K3vG9kAB2yWTwjEtKYQzhFruW");
+declare_id!("GxReFFF7LTe64UeY9ijUmmqUiDdYKTVD8pw6FLZxEQ8i");
 
 #[program]
 pub mod faktor {
