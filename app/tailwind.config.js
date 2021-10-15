@@ -23,10 +23,13 @@ module.exports = {
       },
       indigo: {
         ...defaultColors.indigo,
-        600: "#3D52D5",
+        600: "#3733FF",
       },
     },
     extend: {
+      backgroundColor: {
+        lightest: '#E5E5E5'
+      },
       minWidth: {
         card: "32rem",
       },
@@ -43,6 +46,7 @@ module.exports = {
       textColor: ["hover", "disabled"],
       backgroundColor: ["disabled", "hover"],
       backgroundOpacity: ["disabled", "hover"],
+      backgroundImage: ["disabled"],
       textOpacity: ["disabled"],
       cursor: ["disabled"],
     },
