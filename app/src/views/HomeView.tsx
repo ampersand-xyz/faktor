@@ -1,6 +1,6 @@
 import { Program, Provider, web3 } from "@project-serum/anchor";
-import { AnchorWallet } from "@solana/wallet-adapter-react";
-import { Connection, PublicKey } from "@solana/web3.js";
+import { AnchorWallet, useConnection } from "@solana/wallet-adapter-react";
+import { PublicKey } from "@solana/web3.js";
 import { useEffect, useMemo, useState } from "react";
 import { IssueModal, InvoiceTable } from "src/components";
 import idl from "../idl.json";
@@ -44,13 +44,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
     }
   }, [invoices, currentTab]);
 
+  const { connection } = useConnection();
+
   const provider = useMemo(() => {
-    // Create the provider and return it to the caller
-    // Network set to local network for now
-    const network = "http://127.0.0.1:8899";
-    const connection = new Connection(network, opts.preflightCommitment);
     return new Provider(connection, wallet, opts);
-  }, []);
+  }, [connection]);
 
   const program = useMemo(() => {
     return new Program(idl as any, programID, provider);
