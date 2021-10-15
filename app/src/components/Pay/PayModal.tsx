@@ -33,7 +33,6 @@ export const PayModal: React.FC<PayModalProps> = ({
   const [request, setRequest] = useState<PayInvoiceRequest | null>({
     program,
     invoice,
-    debtor: provider.wallet.publicKey,
   });
 
   const onPay = () => {
@@ -58,7 +57,6 @@ export const PayModal: React.FC<PayModalProps> = ({
     setOpen(false);
     setStep(PayInvoiceSteps.Editing);
     setRequest({
-      debtor: provider.wallet.publicKey,
       program,
       invoice,
     });
