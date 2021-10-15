@@ -1,7 +1,7 @@
-import { useAnchorWallet } from '@solana/wallet-adapter-react';
+import { useAnchorWallet } from "@solana/wallet-adapter-react";
 
-import { Switch, Route } from 'react-router-dom';
-import {HomeView, InvoicesView} from './views';
+import { Switch, Route } from "react-router-dom";
+import { ConnectWalletView, HomeView } from "./views";
 
 export const Routes = () => {
   const wallet = useAnchorWallet();
@@ -9,9 +9,9 @@ export const Routes = () => {
   return (
     <Switch>
       {wallet ? (
-        <Route exact path="/" component={() => <InvoicesView wallet={wallet} />} />
+        <Route exact path="/" component={() => <HomeView wallet={wallet} />} />
       ) : (
-        <Route exact path="/" component={() => <HomeView />} />
+        <Route exact path="/" component={() => <ConnectWalletView />} />
       )}
     </Switch>
   );

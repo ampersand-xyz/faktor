@@ -10,7 +10,7 @@ use {
     std::cmp::min,
 };
 
-declare_id!("ctoeKp85DThYGxzqcrjPd6w2EG1t43uKJJuxiZFzYWv");
+declare_id!("EjC5useGgkZTCpg6a75K3vG9kAB2yWTwjEtKYQzhFruW");
 
 #[program]
 pub mod faktor {
@@ -23,12 +23,12 @@ pub mod faktor {
         let creditor = &ctx.accounts.creditor;
         let debtor = &ctx.accounts.debtor;
         let clock = &ctx.accounts.clock;
+        
         // Intialize invoice account
         invoice.creditor = creditor.key();
         invoice.debtor = debtor.key();
         invoice.balance = balance;
-        // TODO: Max debt limit on memo length?
-        invoice.memo = memo;
+        invoice.memo = memo; // TODO: Max limit on memo length?
         invoice.issued_at = clock.unix_timestamp;
         invoice.bump = bump;
         return Ok(());
@@ -40,6 +40,7 @@ pub mod faktor {
         let debtor = &mut ctx.accounts.debtor;
         let creditor = &mut ctx.accounts.creditor;
         let system_program = &ctx.accounts.system_program;
+
         // Transfer SOL from the debtor to the creditor account
         let amount = min(amount, invoice.balance);
         require!(
@@ -54,8 +55,10 @@ pub mod faktor {
                 system_program.to_account_info().clone(),
             ],
         )?;
-        // Update invoice balances
+
+        // Update invoice balance
         invoice.balance = invoice.balance - amount;
+
         // If invoice is fully paid, close the invoice account
         if invoice.balance <= 0 {
             invoice.close(creditor.to_account_info())?;
@@ -117,6 +120,4 @@ pub struct Invoice {
 pub enum ErrorCode {
     #[msg("Not enough SOL")]
     NotEnoughSOL,
-    #[msg("Something happened")]
-    SomethingHappened,
 }

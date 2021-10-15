@@ -1,37 +1,14 @@
-import { PublicKey } from '@solana/web3.js';
+import { PublicKey } from "@solana/web3.js";
 
-export enum InvoiceStatus {
-  Open = 'open',
-  Paid = 'paid',
-  Rejected = 'rejected',
-  Spam = 'spam',
-  Void = 'void'
-}
 export interface InvoiceData {
-  /* Recipient wallets's SOL address */
-  debtor: string;
-  /* Amount in lamports */
-  amount: number;
-  /* Note about what the invoice is for */
-  memo: string;
-}
-
-export interface InvoiceAccount {
+  creditor: PublicKey;
   debtor: PublicKey;
-  amount: number;
-  status: InvoiceStatus;
+  balance: number;
   memo: string;
-  remainingDebt: {
-    words: string[];
-  };
+  issuedAt: number;
 }
 
 export interface Invoice {
-  publicKey: PublicKey;
-  account: InvoiceAccount;
-}
-
-export interface InvoicesStore {
-  issued: Invoice[];
-  received: Invoice[];
+  address: PublicKey;
+  data: InvoiceData;
 }

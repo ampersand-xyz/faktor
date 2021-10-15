@@ -1,50 +1,55 @@
-import {BN, Program, Provider} from '@project-serum/anchor';
-import {PublicKey,SystemProgram, SYSVAR_CLOCK_PUBKEY} from '@solana/web3.js';
-import {InvoiceData,Invoice,InvoiceStatus} from 'src/types';
+import { BN, Program } from "@project-serum/anchor";
+import { PublicKey, SystemProgram, SYSVAR_CLOCK_PUBKEY } from "@solana/web3.js";
+import { assertExists } from "src/utils";
+import { Invoice } from "src/types";
+
+export type IssueInvoiceRequest = {
+  program?: Program;
+  creditor?: PublicKey;
+  debtor?: PublicKey;
+  balance?: number;
+  memo?: string;
+};
 
 export const issueInvoice = async (
-  program: Program,
-  provider: Provider,
-  data: InvoiceData,
+  req: IssueInvoiceRequest
 ): Promise<Invoice> => {
-  const balance = new BN(data.amount);
-  const debtorPublicKey = new PublicKey(data.debtor);
+  // Validate request
+  assertExists(req.program);
+  assertExists(req.creditor);
+  assertExists(req.debtor);
+  assertExists(req.balance);
+  assertExists(req.memo);
 
-  console.log(`PROGRAM ID: ${program.programId.toString()}`)
-  const [invoiceAddress, bump] = await PublicKey.findProgramAddress([provider.wallet.publicKey.toBuffer(), debtorPublicKey.toBuffer()], program.programId);
-
-  const invoice = {
-    address: invoiceAddress,
-    bump
-  }
-  
+  // Execute RPC request
+  const [address, bump] = await PublicKey.findProgramAddress(
+    [req.creditor.toBuffer(), req.debtor.toBuffer()],
+    req.program.programId
+  );
   try {
-    await program.rpc.issue(invoice.bump, balance, data.memo, {
+    await req.program.rpc.issue(bump, new BN(req.balance), req.memo, {
       accounts: {
-        invoice: invoice.address,
-        creditor: provider.wallet.publicKey,
-        debtor: debtorPublicKey,
+        invoice: address,
+        creditor: req.creditor,
+        debtor: req.debtor,
         systemProgram: SystemProgram.programId,
-        clock: SYSVAR_CLOCK_PUBKEY
+        clock: SYSVAR_CLOCK_PUBKEY,
       },
     });
 
-    const issuedInvoice = await program.account.invoice.fetch(invoice.address);
-    console.log(`\n✅ Success: Issued invoice:`, issuedInvoice, '\n');
+    // Return on-chain invoice
+    const invoice = await req.program.account.invoice.fetch(address);
     return {
-      publicKey: issuedInvoice.publicKey,
-      account: {
-        status: InvoiceStatus.Open,
-        debtor: debtorPublicKey,
-        amount: data.amount,
-        memo: data.memo,
-        remainingDebt: { words: [] as string[] }
-      }
+      address: invoice.publicKey,
+      data: {
+        creditor: invoice.creditor,
+        debtor: invoice.debtor,
+        balance: invoice.balance,
+        memo: invoice.memo,
+        issuedAt: invoice.issuedAt,
+      },
     };
-  } catch (error) {
-    console.log(`\n❌ Error: Failed to issue invoice:`, error, '\n');
-    throw new Error(
-      `Failed to issue invoice: ${error instanceof Error ? error.message : 'Unknown error type'}`
-    );
+  } catch (error: any) {
+    throw new Error(`Failed to issue invoice: ${error.message}`);
   }
 };
