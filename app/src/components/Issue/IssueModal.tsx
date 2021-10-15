@@ -13,7 +13,8 @@ export enum IssueInvoiceSteps {
 
 interface IssueModalProps {
   open: any;
-  setOpen;
+  setOpen: any;
+  onIssued: () => void;
   provider: Provider;
   program: Program;
 }
@@ -21,6 +22,7 @@ interface IssueModalProps {
 export const IssueModal=({
   open,
   setOpen,
+  onIssued, 
   provider,
   program,
 }: IssueModalProps) => {
@@ -43,8 +45,11 @@ export const IssueModal=({
 
   const onConfirm=async () => {
     if(!wallet) return;
-    await issueInvoice(request)
-      .then(onClose)
+    issueInvoice(request)
+         .then(() => {
+            onIssued()
+            onClose()
+      })
       .catch((error) => {
         console.warn("Failed to issue invoice: ",error.message);
       });

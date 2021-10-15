@@ -137,6 +137,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
         open={isIssueModalOpen}
         setOpen={setIsIssueModalOpen}
         program={program}
+        onIssued={refreshInvoices}
         provider={provider}
       />
     </>
