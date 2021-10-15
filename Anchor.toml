@@ -1,9 +1,9 @@
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [programs.localnet]
-faktor = "EjC5useGgkZTCpg6a75K3vG9kAB2yWTwjEtKYQzhFruW"
+faktor = "GxReFFF7LTe64UeY9ijUmmqUiDdYKTVD8pw6FLZxEQ8i"
 
 [registry]
 url = "https://anchor.projectserum.com"
