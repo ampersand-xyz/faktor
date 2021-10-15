@@ -7,7 +7,6 @@ export type PayInvoiceRequest = {
   program?: Program;
   invoice?: any;
   amount?: number;
-  debtor?: any;
 };
 
 export const payInvoice = async (req: PayInvoiceRequest): Promise<Invoice> => {
