@@ -2,7 +2,7 @@
 
 Faktor is a Solana smart contract for issuing "Venmo-style" invoices to other parties on-chain.
 
-### Getting started
+## Getting started
 
 Clone the repo and build:
 
