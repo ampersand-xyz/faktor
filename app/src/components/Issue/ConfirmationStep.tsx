@@ -13,8 +13,8 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
   onConfirm,
 }) => {
   return (
-    <div className="w-full">
-      <h1 className="text-3xl font-semibold text-black">Confirm invoice</h1>
+    <div className="w-full bg-gray-50">
+      <h1 className="text-modal-title">Confirm invoice</h1>
       <div className="flex flex-col mt-8 space-y-4">
         <Section>
           <Label>Debtor</Label>
@@ -43,16 +43,16 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
 
 export const Section: React.FC = ({ children }) => {
   return (
-    <div className="flex flex-col justify-center bg-gray-700 bg-opacity-40 rounded-md px-4 py-3 w-full space-y-0.5">
+    <div className="flex flex-col justify-center border border-gray-200 rounded-md px-3 py-2 w-full space-y-0.5">
       {children}
     </div>
   );
 };
 
 export const Label: React.FC = ({ children }) => {
-  return <span className="text-sm text-gray-400">{children}</span>;
+  return <span className="text-gray-500 font-medium mb-2">{children}</span>;
 };
 
 export const Value: React.FC = ({ children }) => {
-  return <span className="text-lg font-semibold">{children}</span>;
+  return <span className="text-lg text-gray-800 font-semibold">{children}</span>;
 };
