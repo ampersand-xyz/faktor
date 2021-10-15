@@ -32,6 +32,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
 
   const [currentTab, setCurrentTab] = useState("All");
   const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const visibleInvoices = useMemo(() => {
     switch (currentTab) {
@@ -59,6 +60,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
   }, []);
 
   async function refreshInvoices() {
+    console.log('Refreshing invoices...');
+    setRefreshing(true)
     const allInvoices: any = await program.account.invoice.all();
     setInvoices({
       all: allInvoices,
@@ -71,7 +74,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
           inv.account.creditor.toString() === wallet.publicKey.toString()
       ),
     });
+    setRefreshing(false)
   }
+
 
   return (
     <>
@@ -106,6 +111,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
               </nav>
               {/* "New Invoice" button */}
               <div className="py-2">
+                <button onClick={refreshInvoices} disabled={refreshing} className="text-gray-600 hover:text-gray-900 font-semibold px-4 py-3 mr-4 hover:bg-gray-200 rounded-md">{refreshing? 'Refreshing...': 'Refresh'}</button>
                 <button
                   onClick={() => {
                     setIsIssueModalOpen(true);
