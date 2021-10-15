@@ -14,13 +14,10 @@ const wallets = [
 ];
 
 export default function App() {
-  const endpoint =
-    process.env.NODE_ENV === "development"
-      ? "http://127.0.0.1:8899"
-      : clusterApiUrl("devnet");
+  console.log("ENV: ", process.env.NODE_ENV);
   return (
     <BrowserRouter>
-      <ConnectionProvider endpoint={endpoint}>
+      <ConnectionProvider endpoint={clusterApiUrl("devnet")}>
         <WalletProvider wallets={wallets} autoConnect>
           <WalletModalProvider>
             <Routes />
