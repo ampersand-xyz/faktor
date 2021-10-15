@@ -1,2 +1,27 @@
-This project was created by following along with this Dev.to post
-https://dev.to/dabit3/the-complete-guide-to-full-stack-solana-development-with-react-anchor-rust-and-phantom-3291
+# Faktor
+
+Faktor is a Solana smart contract for issuing "Venmo-style" invoices to other parties on-chain.
+
+### Getting started
+
+Clone the repo and build:
+
+```sh
+git clone https://github.com/ampersand-xyz/faktor
+cd faktor
+cargo build
+```
+
+Run tests:
+
+```sh
+anchor test
+```
+
+Start the frontend:
+
+```
+cd app
+yarn
+yarn start
+```
