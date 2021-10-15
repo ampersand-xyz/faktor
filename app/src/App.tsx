@@ -3,6 +3,7 @@ import {
   WalletProvider,
   ConnectionProvider,
 } from "@solana/wallet-adapter-react";
+import { clusterApiUrl } from "@solana/web3.js";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import { Routes } from "./routes";
 import { BrowserRouter } from "react-router-dom";
@@ -13,9 +14,13 @@ const wallets = [
 ];
 
 export default function App() {
+  const endpoint =
+    process.env.NODE_ENV === "development"
+      ? "http://127.0.0.1:8899"
+      : clusterApiUrl("devnet");
   return (
     <BrowserRouter>
-      <ConnectionProvider endpoint="http://127.0.0.1:8899">
+      <ConnectionProvider endpoint={endpoint}>
         <WalletProvider wallets={wallets} autoConnect>
           <WalletModalProvider>
             <Routes />
