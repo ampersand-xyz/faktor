@@ -65,15 +65,12 @@ input[type=number] {
 }
 
 @layer utilities {
-  .anim-duration-3 {
-    animation-duration: 800ms;
+  .bg-gradient-primary {
+     background: linear-gradient(128.32deg, rgba(245, 0, 162, 0.2) 24.33%, rgba(112, 45, 255, 0) 81.84%), #3733FF;
   }
 
-  .anim-delay-1 {
-    animation-delay: 300ms;
-  }
-
-  .anim-delay-2 {
-    animation-delay: 600ms;
+  .text-modal-title {
+    @apply text-3xl font-medium text-gray-900;
   }
 }
+

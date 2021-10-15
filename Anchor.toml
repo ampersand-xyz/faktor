@@ -4,7 +4,6 @@ wallet = "~/.config/solana/id.json"
 
 [programs.localnet]
 faktor = "GxReFFF7LTe64UeY9ijUmmqUiDdYKTVD8pw6FLZxEQ8i"
-solstream = "7DJcaKq8MFF1CJDtBGA1tUJfdNyjzbmfQYGvBVW3t4fG"
 
 [registry]
 url = "https://anchor.projectserum.com"

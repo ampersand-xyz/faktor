@@ -7,12 +7,18 @@ export const Routes = () => {
   const wallet = useAnchorWallet();
 
   return (
-    <Switch>
-      {wallet ? (
-        <Route exact path="/" component={() => <HomeView wallet={wallet} />} />
-      ) : (
-        <Route exact path="/" component={() => <ConnectWalletView />} />
-      )}
-    </Switch>
+    <div className="w-screen h-screen">
+      <Switch>
+        {wallet ? (
+          <Route
+            exact
+            path="/"
+            component={() => <HomeView wallet={wallet} />}
+          />
+        ) : (
+          <Route exact path="/" component={() => <ConnectWalletView />} />
+        )}
+      </Switch>
+    </div>
   );
 };

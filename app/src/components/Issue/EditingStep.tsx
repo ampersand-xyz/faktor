@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
-import { SecondaryAction, PrimaryAction } from "../ActionButtons";
-import { IssueInvoiceRequest } from "src/api";
-import { InputField } from "../InputField";
-import { bs58 } from "@project-serum/anchor/dist/cjs/utils/bytes";
-import { PublicKey } from "@solana/web3.js";
+import {useEffect,useState} from "react";
+import {SecondaryAction,PrimaryAction} from "../ActionButtons";
+import {IssueInvoiceRequest} from "src/api";
+import {InputField} from "../InputField";
+import {PublicKey} from "@solana/web3.js";
 
 export interface EditingStepProps {
   request: IssueInvoiceRequest;
@@ -11,18 +10,18 @@ export interface EditingStepProps {
   onSubmit: (request: IssueInvoiceRequest) => void;
 }
 
-export const EditingStep: React.FC<EditingStepProps> = ({
+export const EditingStep: React.FC<EditingStepProps>=({
   request,
   onCancel,
   onSubmit,
 }) => {
-  const [isSubmitEnabled, setIsSubmitEnabled] = useState(false);
+  const [isSubmitEnabled,setIsSubmitEnabled]=useState(false);
 
-  const [debtor, setDebtor] = useState(request.debtor?.toString() ?? "");
-  const [balance, setBalance] = useState(request.balance?.toString() ?? "");
-  const [memo, setMemo] = useState(request.memo?.toString() ?? "");
+  const [debtor,setDebtor]=useState(request.debtor?.toString()??"");
+  const [balance,setBalance]=useState(request.balance?.toString()??"");
+  const [memo,setMemo]=useState(request.memo?.toString()??"");
 
-  const _onSubmit = () => {
+  const _onSubmit=() => {
     onSubmit({
       debtor: new PublicKey(debtor),
       balance: parseInt(balance),
@@ -32,31 +31,27 @@ export const EditingStep: React.FC<EditingStepProps> = ({
 
   useEffect(() => {
     // TODO input validation (valid address, non-negative balance, etc.)
-    setIsSubmitEnabled(debtor !== "" && balance !== "" && memo !== "");
-  }, [debtor, balance, memo]);
+    setIsSubmitEnabled(debtor!==""&&balance!==""&&memo!=="");
+  },[debtor,balance,memo]);
 
   return (
     <form onSubmit={_onSubmit} className="w-full">
-      <h1 className="text-3xl font-semibold text-black">New invoice</h1>
+      <h1 className="text-modal-title">New invoice</h1>
       <div className="flex flex-col mt-8 space-y-4">
         <InputField
           type="text"
-          label="Debtor"
-          placeholder="Public key"
+          placeholder="Debtor's SOL Address"
           value={debtor}
           onChange={(v) => setDebtor(v)}
         />
         <InputField
           type="number"
-          label="Balance (SOL)"
-          placeholder="10"
-          value={balance}
+          placeholder="Balance (SOL)"
           onChange={(v) => setBalance(v)}
         />
         <InputField
           type="text"
-          label="Memo"
-          placeholder="For dinner"
+          placeholder="Add note"
           value={memo}
           onChange={(v) => setMemo(v)}
         />

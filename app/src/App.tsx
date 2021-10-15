@@ -3,9 +3,9 @@ import {
   WalletProvider,
   ConnectionProvider,
 } from "@solana/wallet-adapter-react";
+import { clusterApiUrl } from "@solana/web3.js";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import { Routes } from "./routes";
-import { ReactNode } from "react";
 import { BrowserRouter } from "react-router-dom";
 
 const wallets = [
@@ -13,23 +13,14 @@ const wallets = [
   getPhantomWallet(),
 ];
 
-const AppLayout = ({ children }: { children: ReactNode }) => {
-  return (
-    <main>
-      <div className="w-screen h-screen">{children}</div>
-    </main>
-  );
-};
-
-export default function AppWithProviders() {
+export default function App() {
+  console.log("ENV: ", process.env.NODE_ENV);
   return (
     <BrowserRouter>
-      <ConnectionProvider endpoint="http://127.0.0.1:8899">
+      <ConnectionProvider endpoint={clusterApiUrl("devnet")}>
         <WalletProvider wallets={wallets} autoConnect>
           <WalletModalProvider>
-            <AppLayout>
-              <Routes />
-            </AppLayout>
+            <Routes />
           </WalletModalProvider>
         </WalletProvider>
       </ConnectionProvider>
