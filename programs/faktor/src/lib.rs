@@ -7,7 +7,7 @@ use {
     std::{clone::Clone, cmp::min},
 };
 
-declare_id!("GxReFFF7LTe64UeY9ijUmmqUiDdYKTVD8pw6FLZxEQ8i");
+declare_id!("9LjA6DjxKDB2uEQPH1kipq5L7Z2hRKGz2yd9EQD9fGhU");
 
 #[program]
 pub mod faktor {
