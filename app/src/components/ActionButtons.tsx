@@ -31,7 +31,7 @@ export const SecondaryAction: React.FC<ActionProps>=({
 }) => {
   return (
     <button
-      className={`px-4 h-14 flex items-center justify-center bg-gray-700 rounded-lg font-bold text-lg hover:bg-opacity-60 ${className}`}
+      className={`px-4 h-14 flex items-center justify-center bg-white rounded-lg font-bold text-lg text-gray-500 hover:text-gray-700 hover:bg-gray-50 ${className}`}
       {...{disabled,type}}
       {...props}
     >
