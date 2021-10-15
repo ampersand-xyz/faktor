@@ -15,8 +15,8 @@ const tabs = [{ name: "All" }, { name: "Creditor" }, { name: "Debtor" }];
 
 interface IInvoices {
   all: any[];
-  debtor: any[];
-  creditor: any[];
+  payables: any[];
+  receivables: any[];
 }
 
 export interface HomeViewProps {
@@ -26,8 +26,8 @@ export interface HomeViewProps {
 export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
   const [invoices, setInvoices] = useState<IInvoices>({
     all: [],
-    debtor: [],
-    creditor: [],
+    payables: [],
+    receivables: [],
   });
 
   const [currentTab, setCurrentTab] = useState("All");
@@ -38,10 +38,10 @@ export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
     switch (currentTab) {
       case "All":
         return invoices.all;
-      case "Creditor":
-        return invoices.creditor;
-      case "Debtor":
-        return invoices.debtor;
+      case "Payables":
+        return invoices.payables;
+      case "Receivables":
+        return invoices.receivables;
     }
   }, [invoices, currentTab]);
 
@@ -64,11 +64,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
     const allInvoices: any = await program.account.invoice.all();
     setInvoices({
       all: allInvoices,
-      debtor: allInvoices.filter(
+      payables: allInvoices.filter(
         (inv: any) =>
           inv.account.debtor.toString() === wallet.publicKey.toString()
       ),
-      creditor: allInvoices.filter(
+      receivables: allInvoices.filter(
         (inv: any) =>
           inv.account.creditor.toString() === wallet.publicKey.toString()
       ),
