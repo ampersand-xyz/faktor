@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
-import { SecondaryAction, PrimaryAction } from "../ActionButtons";
-import { IssueInvoiceRequest } from "src/api";
-import { InputField } from "../InputField";
-import { bs58 } from "@project-serum/anchor/dist/cjs/utils/bytes";
-import { PublicKey } from "@solana/web3.js";
+import {useEffect,useState} from "react";
+import {SecondaryAction,PrimaryAction} from "../ActionButtons";
+import {IssueInvoiceRequest} from "src/api";
+import {InputField} from "../InputField";
+import {PublicKey} from "@solana/web3.js";
 
 export interface EditingStepProps {
   request: IssueInvoiceRequest;
@@ -11,18 +10,18 @@ export interface EditingStepProps {
   onSubmit: (request: IssueInvoiceRequest) => void;
 }
 
-export const EditingStep: React.FC<EditingStepProps> = ({
+export const EditingStep: React.FC<EditingStepProps>=({
   request,
   onCancel,
   onSubmit,
 }) => {
-  const [isSubmitEnabled, setIsSubmitEnabled] = useState(false);
+  const [isSubmitEnabled,setIsSubmitEnabled]=useState(false);
 
-  const [debtor, setDebtor] = useState(request.debtor?.toString() ?? "");
-  const [balance, setBalance] = useState(request.balance?.toString() ?? "");
-  const [memo, setMemo] = useState(request.memo?.toString() ?? "");
+  const [debtor,setDebtor]=useState(request.debtor?.toString()??"");
+  const [balance,setBalance]=useState(request.balance?.toString()??"");
+  const [memo,setMemo]=useState(request.memo?.toString()??"");
 
-  const _onSubmit = () => {
+  const _onSubmit=() => {
     onSubmit({
       debtor: new PublicKey(debtor),
       balance: parseInt(balance),
@@ -32,8 +31,8 @@ export const EditingStep: React.FC<EditingStepProps> = ({
 
   useEffect(() => {
     // TODO input validation (valid address, non-negative balance, etc.)
-    setIsSubmitEnabled(debtor !== "" && balance !== "" && memo !== "");
-  }, [debtor, balance, memo]);
+    setIsSubmitEnabled(debtor!==""&&balance!==""&&memo!=="");
+  },[debtor,balance,memo]);
 
   return (
     <form onSubmit={_onSubmit} className="w-full">
