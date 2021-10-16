@@ -1,6 +1,6 @@
 # Faktor
 
-Faktor is a Solana smart contract for issuing "Venmo-style" invoices to other parties on-chain.
+A program for issuing invoices on Solana.
 
 ## Getting started
 
