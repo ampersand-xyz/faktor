@@ -1,6 +1,5 @@
 import { BN, Program } from "@project-serum/anchor";
 import { SystemProgram } from "@solana/web3.js";
-import { Invoice } from "src/types";
 import { assertExists } from "src/utils";
 
 export type PayInvoiceRequest = {
@@ -9,12 +8,13 @@ export type PayInvoiceRequest = {
   amount?: number;
 };
 
-export const payInvoice = async (req: PayInvoiceRequest): Promise<Invoice> => {
+export const payInvoice = async (req: PayInvoiceRequest): Promise<any> => {
   // Validate request
   assertExists(req.program);
   assertExists(req.invoice);
   assertExists(req.amount);
 
+  // Execute request
   try {
     await req.program.rpc.pay(new BN(req.amount), {
       accounts: {
@@ -24,21 +24,7 @@ export const payInvoice = async (req: PayInvoiceRequest): Promise<Invoice> => {
         systemProgram: SystemProgram.programId,
       },
     });
-
-    // Return on-chain invoice
-    const invoice = await req.program.account.invoice.fetch(
-      req.invoice.publicKey
-    );
-    return {
-      address: invoice.publicKey,
-      data: {
-        creditor: invoice.creditor,
-        debtor: invoice.debtor,
-        balance: invoice.balance,
-        memo: invoice.memo,
-        issuedAt: invoice.issuedAt,
-      },
-    };
+    return null;
   } catch (error: any) {
     throw new Error(`Failed to pay invoice: ${error.message}`);
   }

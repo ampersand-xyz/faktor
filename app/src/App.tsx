@@ -14,7 +14,6 @@ const wallets = [
 ];
 
 export default function App() {
-  console.log("ENV: ", process.env.NODE_ENV);
   return (
     <BrowserRouter>
       <ConnectionProvider endpoint={clusterApiUrl("devnet")}>

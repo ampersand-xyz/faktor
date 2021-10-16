@@ -11,7 +11,7 @@ const opts: web3.ConfirmOptions = {
   preflightCommitment: "processed",
 };
 
-const tabs = [{ name: "All" }, { name: "Creditor" }, { name: "Debtor" }];
+const tabs = [{ name: "All" }, { name: "Payables" }, { name: "Receivables" }];
 
 interface IInvoices {
   all: any[];
@@ -80,6 +80,12 @@ export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
     <>
       <div className="flex flex-1 h-screen overflow-auto overflow-hidden bg-gray-100 focus:outline-none">
         <main className="z-0 flex-1 pb-8 overflow-y-auto">
+          {/* Devnet banner */}
+          <div className="flex w-full h-12 bg-orange-500">
+            <p className="m-auto font-medium text-white">
+              Faktor is currently only available on Solana devnet.
+            </p>
+          </div>
           {/* Page header */}
           <div className="max-w-4xl mx-auto mt-8">
             <div className="mt-4">
@@ -133,7 +139,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
                 invoices={visibleInvoices}
                 currentTab={currentTab}
                 program={program}
-                provider={provider}
+                refresh={refresh}
               />
             </div>
           </div>

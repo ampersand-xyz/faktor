@@ -1,17 +1,19 @@
 import { CashIcon } from "@heroicons/react/solid";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useState } from "react";
 import { PayModal } from "src/components/Pay";
+import { abbreviate } from "src/utils";
 
 export const InvoiceTable = ({
   invoices,
   currentTab,
   program,
-  provider,
+  refresh,
 }: {
   invoices: any;
   currentTab: string;
   program: any;
-  provider: any;
+  refresh: any;
 }) => {
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
   const [currentInvoice, setCurrentInvoice] = useState<any>();
@@ -23,46 +25,34 @@ export const InvoiceTable = ({
             <thead>
               <tr>
                 <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase bg-gray-50">
-                  Public Key
-                </th>
-                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase bg-gray-50">
-                  Note
+                  Memo
                 </th>
                 <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase bg-gray-50">
                   Amount
                 </th>
-                {currentTab === "Debtor" && (
-                  <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase bg-gray-50">
-                    Date
-                  </th>
+                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase bg-gray-50">
+                  From
+                </th>
+                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase bg-gray-50">
+                  To
+                </th>
+                {currentTab === "Payables" && (
+                  <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase bg-gray-50"></th>
                 )}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {(invoices ?? []).map((invoice: any, i: number) => {
-                const pubKey = invoice.publicKey.toString();
-                const balance = invoice.account.balance.toString();
+                const balance = (
+                  invoice.account.balance / LAMPORTS_PER_SOL
+                ).toString();
 
                 return (
                   <tr key={i} className="bg-white">
                     <td className="w-full px-6 py-4 text-sm text-gray-900 max-w-0 whitespace-nowrap">
-                      <div className="flex">
-                        <a
-                          href="#"
-                          className="inline-flex space-x-2 text-sm truncate group"
-                        >
-                          <CashIcon
-                            className="flex-shrink-0 w-5 h-5 text-gray-400 group-hover:text-gray-500"
-                            aria-hidden="true"
-                          />
-                          <p className="text-gray-500 truncate group-hover:text-gray-900">
-                            {pubKey}
-                          </p>
-                        </a>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-right text-gray-500 whitespace-nowrap">
-                      <span>{invoice.account.memo}</span>
+                      <p className="text-gray-500 truncate group-hover:text-gray-900">
+                        {invoice.account.memo}
+                      </p>
                     </td>
                     <td className="px-6 py-4 text-sm text-right text-gray-500 whitespace-nowrap">
                       <div className="flex space-x-2">
@@ -137,7 +127,13 @@ export const InvoiceTable = ({
                         </div>
                       </div>
                     </td>
-                    {currentTab === "Debtor" && (
+                    <td className="px-6 py-4 text-sm text-right text-gray-500 whitespace-nowrap">
+                      <span>{abbreviate(invoice.account.creditor)}</span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-right text-gray-500 whitespace-nowrap">
+                      <span>{abbreviate(invoice.account.debtor)}</span>
+                    </td>
+                    {currentTab === "Payables" && (
                       <td className="px-6 py-4 text-sm text-right text-gray-500 whitespace-nowrap">
                         <button
                           onClick={() => {
@@ -145,7 +141,7 @@ export const InvoiceTable = ({
                             setCurrentInvoice(invoice);
                           }}
                           type="button"
-                          className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white bg-green-600 border border-transparent rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                          className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white bg-green-600 rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                         >
                           Pay
                         </button>
@@ -164,7 +160,7 @@ export const InvoiceTable = ({
           </div>
           <div className="mt-3 text-center sm:mt-5">
             <h3 className="text-lg font-medium leading-6 text-gray-900">
-              No Invoices Found
+              No invoices found
             </h3>
           </div>
         </div>
@@ -175,7 +171,7 @@ export const InvoiceTable = ({
           open={isPayModalOpen}
           setOpen={setIsPayModalOpen}
           program={program}
-          provider={provider}
+          refresh={refresh}
         />
       )}
     </>

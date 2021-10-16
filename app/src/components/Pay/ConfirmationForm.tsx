@@ -1,44 +1,48 @@
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { IssueInvoiceRequest } from "src/api";
-import { SecondaryAction, PrimaryAction } from "../ActionButtons";
+import React from "react";
+import { PayInvoiceRequest } from "src/api/payInvoice";
+import { abbreviate } from "src/utils";
+import { PrimaryAction, SecondaryAction } from "../ActionButtons";
 
-export interface ConfirmationStepProps {
-  request: IssueInvoiceRequest;
-  onBack: () => void;
+interface ConfirmationFormProps {
+  request: PayInvoiceRequest;
+  onCancel: () => void;
   onConfirm: () => void;
 }
 
-export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
+export const ConfirmationForm: React.FC<ConfirmationFormProps> = ({
   request,
-  onBack,
+  onCancel,
   onConfirm,
 }) => {
   return (
-    <div className="w-full bg-gray-50">
-      <h1 className="text-modal-title">Confirm invoice</h1>
+    <form onSubmit={onConfirm} className="w-full">
+      <h1 className="text-modal-title">Pay invoice</h1>
       <div className="flex flex-col mt-8 space-y-4">
         <Section>
-          <Label>Debtor</Label>
-          <Value>{request.debtor.toString()}</Value>
+          <Label>From</Label>
+          <Value>{abbreviate(request.invoice.account.creditor)}</Value>
         </Section>
         <Section>
           <Label>Balance</Label>
-          <Value>{request.balance / LAMPORTS_PER_SOL} SOL</Value>
+          <Value>
+            {request.invoice.account.balance / LAMPORTS_PER_SOL} SOL
+          </Value>
         </Section>
         <Section>
           <Label>Memo</Label>
-          <Value>{request.memo}</Value>
+          <Value>{request.invoice.account.memo}</Value>
         </Section>
       </div>
       <div className="flex items-center justify-between w-full mt-8 space-x-3">
-        <SecondaryAction className="w-1/2" onClick={onBack}>
-          Back
+        <SecondaryAction className="w-1/2" onClick={onCancel}>
+          Cancel
         </SecondaryAction>
         <PrimaryAction className="w-1/2" onClick={onConfirm}>
-          Confirm
+          Pay
         </PrimaryAction>
       </div>
-    </div>
+    </form>
   );
 };
 
