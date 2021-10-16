@@ -83,7 +83,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
           {/* Devnet banner */}
           <div className="flex w-full h-12 bg-orange-500">
             <p className="m-auto font-medium text-white">
-              Faktor is currently only available on Solana devnet.
+              Currently only available on Solana devnet.
             </p>
           </div>
           {/* Page header */}
