@@ -1,37 +1,39 @@
-import {Dialog,Transition} from "@headlessui/react";
-import {Fragment,useState} from "react";
-import {Program,Provider} from "@project-serum/anchor";
-import {useAnchorWallet} from "@solana/wallet-adapter-react";
-import {issueInvoice,IssueInvoiceRequest} from "src/api";
-import {EditingStep} from "./EditingStep";
-import {ConfirmationStep} from "./ConfirmationStep";
+import { Dialog, Transition } from "@headlessui/react";
+import { Fragment, useState } from "react";
+import { Program, Provider } from "@project-serum/anchor";
+import { useAnchorWallet } from "@solana/wallet-adapter-react";
+import { issueInvoice, IssueInvoiceRequest } from "src/api";
+import { EditingStep } from "./EditingStep";
+import { ConfirmationStep } from "./ConfirmationStep";
 
 export enum IssueInvoiceSteps {
-  Editing=0,
-  Confirmation=1,
+  Editing = 0,
+  Confirmation = 1,
 }
 
 interface IssueModalProps {
   open: any;
-  setOpen;
+  setOpen: any;
+  refresh: () => void;
   provider: Provider;
   program: Program;
 }
 
-export const IssueModal=({
+export const IssueModal = ({
   open,
   setOpen,
+  refresh,
   provider,
   program,
 }: IssueModalProps) => {
-  const wallet=useAnchorWallet();
-  const [step,setStep]=useState(IssueInvoiceSteps.Editing);
-  const [request,setRequest]=useState<IssueInvoiceRequest|null>({
+  const wallet = useAnchorWallet();
+  const [step, setStep] = useState(IssueInvoiceSteps.Editing);
+  const [request, setRequest] = useState<IssueInvoiceRequest | null>({
     program,
     creditor: provider.wallet.publicKey,
   });
 
-  const onSubmit=(data: IssueInvoiceRequest) => {
+  const onSubmit = (data: IssueInvoiceRequest) => {
     setRequest({
       debtor: data.debtor,
       balance: data.balance,
@@ -41,16 +43,19 @@ export const IssueModal=({
     setStep(IssueInvoiceSteps.Confirmation);
   };
 
-  const onConfirm=async () => {
-    if(!wallet) return;
-    await issueInvoice(request)
-      .then(onClose)
+  const onConfirm = async () => {
+    if (!wallet) return;
+    issueInvoice(request)
+      .then(() => {
+        onClose();
+        refresh();
+      })
       .catch((error) => {
-        console.warn("Failed to issue invoice: ",error.message);
+        console.warn("Failed to issue invoice: ", error.message);
       });
   };
 
-  const onClose=() => {
+  const onClose = () => {
     setOpen(false);
     setStep(IssueInvoiceSteps.Editing);
     setRequest({
@@ -98,19 +103,19 @@ export const IssueModal=({
             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
             leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
           >
-            <div className="inline-block w-full max-w-4xl px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-gray-50 rounded-lg shadow-xl sm:my-8 sm:align-middle sm:p-6">
+            <div className="inline-block w-full max-w-2xl px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform rounded-lg shadow-xl bg-gray-50 sm:my-8 sm:align-middle sm:p-6">
               <div className="flex items-center my-4 divide-x-2">
-                {step===IssueInvoiceSteps.Editing&&(
+                {step === IssueInvoiceSteps.Editing && (
                   <EditingStep
                     request={request}
                     onCancel={onClose}
                     onSubmit={onSubmit}
                   />
                 )}
-                {step===IssueInvoiceSteps.Confirmation&&(
+                {step === IssueInvoiceSteps.Confirmation && (
                   <ConfirmationStep
                     request={request}
-                    onBack={() => setStep(step-1)}
+                    onBack={() => setStep(step - 1)}
                     onConfirm={onConfirm}
                   />
                 )}
@@ -122,5 +127,3 @@ export const IssueModal=({
     </Transition.Root>
   );
 };
-
-

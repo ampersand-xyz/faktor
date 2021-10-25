@@ -1,8 +1,9 @@
-import {useEffect,useState} from "react";
-import {SecondaryAction,PrimaryAction} from "../ActionButtons";
-import {IssueInvoiceRequest} from "src/api";
-import {InputField} from "../InputField";
-import {PublicKey} from "@solana/web3.js";
+import { useEffect, useState } from "react";
+import { SecondaryAction, PrimaryAction } from "../ActionButtons";
+import { checkWalletAddressExists, IssueInvoiceRequest } from "src/api";
+import { InputField } from "../InputField";
+import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import { useConnection } from "@solana/wallet-adapter-react";
 
 export interface EditingStepProps {
   request: IssueInvoiceRequest;
@@ -10,29 +11,44 @@ export interface EditingStepProps {
   onSubmit: (request: IssueInvoiceRequest) => void;
 }
 
-export const EditingStep: React.FC<EditingStepProps>=({
+export const EditingStep: React.FC<EditingStepProps> = ({
   request,
   onCancel,
   onSubmit,
 }) => {
-  const [isSubmitEnabled,setIsSubmitEnabled]=useState(false);
+  const [isSubmitEnabled, setIsSubmitEnabled] = useState(false);
 
-  const [debtor,setDebtor]=useState(request.debtor?.toString()??"");
-  const [balance,setBalance]=useState(request.balance?.toString()??"");
-  const [memo,setMemo]=useState(request.memo?.toString()??"");
+  const [debtor, setDebtor] = useState(request.debtor?.toString() ?? "");
+  const [debtorError, setDebtorError] = useState("");
 
-  const _onSubmit=() => {
+  const [balance, setBalance] = useState(request.balance?.toString() ?? "");
+  const [memo, setMemo] = useState(request.memo?.toString() ?? "");
+
+  const { connection } = useConnection();
+
+  const _onSubmit = () => {
     onSubmit({
       debtor: new PublicKey(debtor),
-      balance: parseInt(balance),
+      balance: parseFloat(balance) * LAMPORTS_PER_SOL,
       memo: memo,
     });
   };
 
   useEffect(() => {
     // TODO input validation (valid address, non-negative balance, etc.)
-    setIsSubmitEnabled(debtor!==""&&balance!==""&&memo!=="");
-  },[debtor,balance,memo]);
+    setIsSubmitEnabled(debtor !== "" && balance !== "" && memo !== "");
+  }, [debtor, balance, memo]);
+
+  useEffect(() => {
+    if (debtor) {
+      setDebtorError("");
+      checkWalletAddressExists(connection, debtor).then((res) => {
+        if (!res) {
+          setDebtorError("Invalid account");
+        }
+      });
+    }
+  }, [debtor]);
 
   return (
     <form onSubmit={_onSubmit} className="w-full">
@@ -40,18 +56,19 @@ export const EditingStep: React.FC<EditingStepProps>=({
       <div className="flex flex-col mt-8 space-y-4">
         <InputField
           type="text"
-          placeholder="Debtor's SOL Address"
+          placeholder="Wallet address"
+          error={debtorError}
           value={debtor}
           onChange={(v) => setDebtor(v)}
         />
         <InputField
           type="number"
-          placeholder="Balance (SOL)"
+          placeholder="Amount (SOL)"
           onChange={(v) => setBalance(v)}
         />
         <InputField
           type="text"
-          placeholder="Add note"
+          placeholder="Add a note"
           value={memo}
           onChange={(v) => setMemo(v)}
         />

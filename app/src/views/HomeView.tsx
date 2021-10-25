@@ -11,12 +11,12 @@ const opts: web3.ConfirmOptions = {
   preflightCommitment: "processed",
 };
 
-const tabs = [{ name: "All" }, { name: "Creditor" }, { name: "Debtor" }];
+const tabs = [{ name: "All" }, { name: "Payables" }, { name: "Receivables" }];
 
 interface IInvoices {
   all: any[];
-  debtor: any[];
-  creditor: any[];
+  payables: any[];
+  receivables: any[];
 }
 
 export interface HomeViewProps {
@@ -26,21 +26,22 @@ export interface HomeViewProps {
 export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
   const [invoices, setInvoices] = useState<IInvoices>({
     all: [],
-    debtor: [],
-    creditor: [],
+    payables: [],
+    receivables: [],
   });
 
   const [currentTab, setCurrentTab] = useState("All");
   const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const visibleInvoices = useMemo(() => {
     switch (currentTab) {
       case "All":
         return invoices.all;
-      case "Creditor":
-        return invoices.creditor;
-      case "Debtor":
-        return invoices.debtor;
+      case "Payables":
+        return invoices.payables;
+      case "Receivables":
+        return invoices.receivables;
     }
   }, [invoices, currentTab]);
 
@@ -55,28 +56,36 @@ export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
   }, [provider]);
 
   useEffect(() => {
-    refreshInvoices();
+    refresh();
   }, []);
 
-  async function refreshInvoices() {
+  async function refresh() {
+    setIsRefreshing(true);
     const allInvoices: any = await program.account.invoice.all();
     setInvoices({
       all: allInvoices,
-      debtor: allInvoices.filter(
+      payables: allInvoices.filter(
         (inv: any) =>
           inv.account.debtor.toString() === wallet.publicKey.toString()
       ),
-      creditor: allInvoices.filter(
+      receivables: allInvoices.filter(
         (inv: any) =>
           inv.account.creditor.toString() === wallet.publicKey.toString()
       ),
     });
+    setIsRefreshing(false);
   }
 
   return (
     <>
       <div className="flex flex-1 h-screen overflow-auto overflow-hidden bg-gray-100 focus:outline-none">
         <main className="z-0 flex-1 pb-8 overflow-y-auto">
+          {/* Devnet banner */}
+          <div className="flex w-full h-12 bg-orange-500">
+            <p className="m-auto font-medium text-white">
+              Currently only available on Solana devnet.
+            </p>
+          </div>
           {/* Page header */}
           <div className="max-w-4xl mx-auto mt-8">
             <div className="mt-4">
@@ -107,6 +116,13 @@ export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
               {/* "New Invoice" button */}
               <div className="py-2">
                 <button
+                  onClick={refresh}
+                  disabled={isRefreshing}
+                  className="px-4 py-3 mr-4 font-semibold text-gray-600 rounded-md hover:text-gray-900 hover:bg-gray-200"
+                >
+                  {isRefreshing ? "Refreshing..." : "Refresh"}
+                </button>
+                <button
                   onClick={() => {
                     setIsIssueModalOpen(true);
                   }}
@@ -122,6 +138,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
               <InvoiceTable
                 invoices={visibleInvoices}
                 currentTab={currentTab}
+                program={program}
+                refresh={refresh}
               />
             </div>
           </div>
@@ -131,6 +149,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ wallet }) => {
         open={isIssueModalOpen}
         setOpen={setIsIssueModalOpen}
         program={program}
+        refresh={refresh}
         provider={provider}
       />
     </>
